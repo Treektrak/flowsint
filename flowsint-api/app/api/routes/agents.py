@@ -10,12 +10,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
 from flowsint_core.core.agents import (
     EXPERTS,
+    SF_PRESETS,
     build_user_prompt,
     extract_graph,
     generate_report_html_pdf,
     generate_report_pdf,
     run_panel,
     serialize_graph,
+    sf_events_to_graph,
+    sf_list_modules,
+    sf_run_scan,
 )
 from flowsint_core.core.graph import GraphNode
 from flowsint_core.core.llm import create_llm_provider
@@ -272,3 +276,80 @@ async def ai_import(
             continue
 
     return {"nodes_added": added, "edges_added": ecount}
+
+
+def _add_nodes_edges(sketch_service, sketch_id: str, owner_id, nodes, edges):
+    """Добавляет извлечённые узлы и связи в граф. Возвращает (added, ecount)."""
+    now = datetime.utcnow().isoformat()
+    keymap = {}
+    added = 0
+    n = len(nodes)
+    for i, nd in enumerate(nodes):
+        ang = 2 * math.pi * i / max(n, 1)
+        ring = 220 + (i % 3) * 120
+        gn = GraphNode(
+            id="tmp-" + uuid.uuid4().hex,
+            nodeLabel=nd["label"], nodeType=nd["type"], nodeShape="circle",
+            nodeMetadata={"created_at": now}, nodeProperties=nd["properties"],
+            x=500.0 + ring * math.cos(ang), y=380.0 + ring * math.sin(ang),
+        )
+        try:
+            res = sketch_service.add_node(UUID(sketch_id), owner_id, gn)
+            node_obj = res.get("node") if isinstance(res, dict) else res
+            node_id = getattr(node_obj, "id", None)
+            if node_id is None and isinstance(node_obj, dict):
+                node_id = node_obj.get("id")
+            if node_id:
+                keymap[nd["key"]] = node_id
+                added += 1
+        except Exception:
+            continue
+    ecount = 0
+    for e in edges:
+        s, t = keymap.get(e["source"]), keymap.get(e["target"])
+        if not s or not t:
+            continue
+        try:
+            sketch_service.add_relationship(UUID(sketch_id), owner_id, s, t, e["label"])
+            ecount += 1
+        except Exception:
+            continue
+    return added, ecount
+
+
+@router.get("/spiderfoot/modules")
+def spiderfoot_modules(current_user: Profile = Depends(get_current_user)):
+    """Список модулей встроенного SpiderFoot и доступные пресеты."""
+    mods = sf_list_modules()
+    return {"count": len(mods), "modules": mods, "presets": list(SF_PRESETS.keys())}
+
+
+class SpiderfootScanRequest(BaseModel):
+    target: str
+    preset: Optional[str] = "passive"
+    modules: Optional[List[str]] = None
+
+
+@router.post("/sketch/{sketch_id}/spiderfoot-scan")
+async def spiderfoot_scan(
+    sketch_id: str,
+    body: SpiderfootScanRequest,
+    db: Session = Depends(get_db),
+    current_user: Profile = Depends(get_current_user),
+):
+    """Запускает встроенный SpiderFoot по цели и импортирует результаты в граф."""
+    target = (body.target or "").strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="Не указана цель скана.")
+    try:
+        events = sf_run_scan(target, modules=body.modules, preset=body.preset or "passive")
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Ошибка SpiderFoot: {exc}")
+
+    nodes, edges = sf_events_to_graph(events, target)
+    if not nodes:
+        return {"nodes_added": 0, "edges_added": 0, "events": len(events)}
+
+    sketch_service = create_sketch_service(db)
+    added, ecount = _add_nodes_edges(sketch_service, sketch_id, current_user.id, nodes, edges)
+    return {"nodes_added": added, "edges_added": ecount, "events": len(events)}

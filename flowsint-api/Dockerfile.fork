@@ -31,6 +31,9 @@ COPY flowsint-api ./flowsint-api
 
 RUN uv sync --no-dev
 
+# Встроенный SpiderFoot: установить его зависимости в то же окружение
+RUN uv pip install --python /app/.venv/bin/python -r flowsint-api/spiderfoot/requirements.txt
+
 # DEV
 FROM python:3.12-slim AS dev
 
