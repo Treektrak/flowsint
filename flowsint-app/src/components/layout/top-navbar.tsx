@@ -56,8 +56,8 @@ export const TopNavbar = memo(() => {
     >
       <div className="flex items-center gap-4">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <img src="/icon.png" alt="Flowsint" className="h-8 w-8" />
-          <span className="text-lg font-semibold">Flowsint</span>
+          <img src="/icon.png" alt="Traceon" className="h-8 w-8" />
+          <span className="text-lg font-semibold">Traceon</span>
         </Link>
         <div className="hidden lg:flex items-center gap-2">
           {investigationId && <InvestigationSelector />}

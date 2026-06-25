@@ -53,7 +53,7 @@ def _build_pdf(data: Dict[str, Any], font_dir: str):
             self.set_y(-15)
             self.set_font("DejaVu", "", 8)
             self.set_text_color(*_MUTED)
-            self.cell(0, 10, f"Flowsint · ИИ-аналитика · стр. {self.page_no()}", align="C")
+            self.cell(0, 10, f"Traceon · ИИ-аналитика · стр. {self.page_no()}", align="C")
 
     pdf = Report(format="A4")
     pdf.add_font("DejaVu", "", f"{font_dir}/DejaVuSans.ttf")
