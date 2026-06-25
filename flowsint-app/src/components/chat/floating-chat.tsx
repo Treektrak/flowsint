@@ -16,8 +16,10 @@ import { CopyButton } from '../copy'
 import type { UIMessage } from 'ai'
 import { useIsChatActive } from '@/hooks/use-is-chat-active'
 import ChatInactive from './chat-inactive'
+import { useTranslation } from 'react-i18next'
 
 function FloatingChat() {
+  const { t } = useTranslation()
   const bottomRef = useRef<HTMLDivElement>(null)
   const isOpenChat = useLayoutStore((s) => s.isOpenChat)
   const toggleChat = useLayoutStore((s) => s.toggleChat)
@@ -85,7 +87,7 @@ function FloatingChat() {
               </TooltipTrigger>
               <TooltipContent side="left">
                 <div className="text-center">
-                  <div>Toggle assistant</div>
+                  <div>{t('chat.toggleAssistant')}</div>
                   <div className="text-xs opacity-70">{keyboardShortcut}</div>
                 </div>
               </TooltipContent>
@@ -117,7 +119,7 @@ function FloatingChat() {
                             className="h-6 w-6"
                             //@ts-ignore
                             onClick={handleCreateNewChat}
-                            title="Create new chat"
+                            title={t('chat.newChat')}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -132,7 +134,7 @@ function FloatingChat() {
                             className="h-6 w-6"
                             //@ts-ignore
                             onClick={() => setView('history')}
-                            title="Create new chat"
+                            title={t('chat.history')}
                           >
                             <History className="h-3 w-3 opacity-60" />
                           </Button>
@@ -176,11 +178,10 @@ function FloatingChat() {
                               </div>
                               <div className="space-y-2 max-w-sm">
                                 <h3 className="text-lg font-semibold text-foreground">
-                                  No conversations yet
+                                  {t('chat.noConversationsYet')}
                                 </h3>
                                 <p className="text-sm opacity-70">
-                                  Start chatting with AI to analyze your investigation data and get
-                                  insights. Your conversation history will appear here.
+                                  {t('chat.noConversationsDescription')}
                                 </p>
                               </div>
                               <div className="mt-6">
@@ -190,7 +191,7 @@ function FloatingChat() {
                                   onClick={handleCreateNewChat}
                                   className="bg-linear-to-r from-primary/10 to-primary/5 border-primary/20 hover:from-primary/20 hover:to-primary/10"
                                 >
-                                  Start your first chat
+                                  {t('chat.startFirstChat')}
                                 </Button>
                               </div>
                             </>
@@ -198,28 +199,32 @@ function FloatingChat() {
                             <>
                               <div className="space-y-2 max-w-sm">
                                 <h3 className="text-lg font-semibold text-foreground">
-                                  Start your conversation with{' '}
+                                  {t('chat.startConversationWith')}{' '}
                                   <span className="text-primary">Flo</span>
                                 </h3>
                                 <p className="text-sm opacity-70">
-                                  Ask me anything about your investigation. Here are some examples:
+                                  {t('chat.askAnythingExamples')}
                                 </p>
                               </div>
                               <div className="mt-6 space-y-3 max-w-md">
                                 <div className="text-xs space-y-1">
-                                  <p className="font-medium text-left">Analysis & Insights</p>
+                                  <p className="font-medium text-left">
+                                    {t('chat.analysisInsights')}
+                                  </p>
                                   <ul className="space-y-1 text-left opacity-60">
-                                    <li>• "Analyze the connections between these entities"</li>
-                                    <li>• "What patterns do you see in this data?"</li>
-                                    <li>• "Summarize the key findings from this investigation"</li>
+                                    <li>• {t('chat.exampleAnalyzeConnections')}</li>
+                                    <li>• {t('chat.examplePatterns')}</li>
+                                    <li>• {t('chat.exampleSummarizeFindings')}</li>
                                   </ul>
                                 </div>
                                 <div className="text-xs space-y-1">
-                                  <p className="font-medium text-left">Investigation Help</p>
+                                  <p className="font-medium text-left">
+                                    {t('chat.investigationHelp')}
+                                  </p>
                                   <ul className="space-y-1 text-left opacity-60">
-                                    <li>• "Suggest next steps for this investigation"</li>
-                                    <li>• "What should I look for next?"</li>
-                                    <li>• "Help me organize this investigation"</li>
+                                    <li>• {t('chat.exampleNextSteps')}</li>
+                                    <li>• {t('chat.exampleLookForNext')}</li>
+                                    <li>• {t('chat.exampleOrganize')}</li>
                                   </ul>
                                 </div>
                               </div>

@@ -16,15 +16,17 @@ import { TypeBadge } from '@/components/type-badge'
 import { useParams } from '@tanstack/react-router'
 import { useGraphSettingsStore } from '@/stores/graph-settings-store'
 import { usePermissions } from '@/hooks/use-can'
+import { useTranslation } from 'react-i18next'
 
 const SelectedItemsPanel = () => {
+  const { t } = useTranslation()
   const selectedNodes = useGraphStore((s) => s.selectedNodes)
 
   return (
     <div className="w-full flex flex-col h-full">
       <div className="p-2 flex items-center justify-between border-b">
         <div className="ml-2 text-sm truncate text-ellipsis">
-          <span className="font-semibold">{selectedNodes.length}</span> selected items
+          <span className="font-semibold">{selectedNodes.length}</span> {t('entities.selectedItems')}
         </div>
         <ActionBar />
       </div>
@@ -38,13 +40,14 @@ const SelectedItemsPanel = () => {
 export default memo(SelectedItemsPanel)
 
 const SelectedNodeItem = memo(({ node }: { node: GraphNode; color: string }) => {
+  const { t } = useTranslation()
   return (
     <Badge
       variant="outline"
       className="flex w-full items-center justify-between text-left border border-border gap-1.5 text-xs p-2 py-1.5"
     >
       <span className="inline-flex items-center gap-2 truncate text-ellipsis">
-        <span className="truncate text-ellipsis">{node.nodeLabel || 'Unknown'}</span>
+        <span className="truncate text-ellipsis">{node.nodeLabel || t('entities.unknown')}</span>
       </span>
       <TypeBadge type={node?.nodeType} />
     </Badge>
@@ -52,6 +55,7 @@ const SelectedNodeItem = memo(({ node }: { node: GraphNode; color: string }) => 
 })
 
 export const SelectedList = () => {
+  const { t } = useTranslation()
   const selectedNodes = useGraphStore((s) => s.selectedNodes)
   const colors = useNodesDisplaySettings((s) => s.colors)
   const displayItems = selectedNodes?.slice(0, 10) || []
@@ -68,7 +72,7 @@ export const SelectedList = () => {
           className="flex w-full items-center justify-between text-left border border-border gap-1.5 text-xs p-2 py-1.5"
         >
           <span className="flex items-center gap-2 truncate text-ellipsis">
-            <span className="truncate text-ellipsis">{remainingCount}+ other</span>
+            <span className="truncate text-ellipsis">{t('entities.othersCount', { count: remainingCount })}</span>
           </span>
         </Badge>
       )}
@@ -77,6 +81,7 @@ export const SelectedList = () => {
 }
 
 const ActionBar = () => {
+  const { t } = useTranslation()
   const { id: sketchId } = useParams({ strict: false })
   const { canEdit } = usePermissions()
   const { confirm } = useConfirm()
@@ -101,8 +106,8 @@ const ActionBar = () => {
     if (!selectedNodes.length || !sketchId) return
     if (
       !(await confirm({
-        title: `You are about to delete ${selectedNodes.length} node(s).`,
-        message: 'The action is irreversible.'
+        title: t('entities.deleteNodesConfirmTitle', { count: selectedNodes.length }),
+        message: t('entities.actionIrreversible')
       }))
     )
       return
@@ -117,9 +122,9 @@ const ActionBar = () => {
         )
       })(),
       {
-        loading: `Deleting ${selectedNodes.length} node(s)...`,
-        success: 'Nodes deleted successfully.',
-        error: 'Failed to delete selected nodes.'
+        loading: t('entities.deletingNodes', { count: selectedNodes.length }),
+        success: t('entities.nodesDeletedSuccess'),
+        error: t('entities.nodesDeleteError')
       }
     )
   }, [selectedNodes, confirm, removeNodes, clearSelectedNodes, sketchId])
@@ -147,7 +152,7 @@ const ActionBar = () => {
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Ask AI</p>
+              <p>{t('entities.askAi')}</p>
             </TooltipContent>
           </Tooltip>}
         {canEdit && (
@@ -171,7 +176,7 @@ const ActionBar = () => {
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete {selectedNodes.length} nodes</p>
+              <p>{t('entities.deleteNodes', { count: selectedNodes.length })}</p>
             </TooltipContent>
           </Tooltip>
         )}
@@ -188,9 +193,9 @@ const ActionBar = () => {
             </TooltipTrigger>
             <TooltipContent>
               {!shareSameType ? (
-                <p>All selected items are not the same type</p>
+                <p>{t('entities.notSameType')}</p>
               ) : (
-                <p>Launch enricher</p>
+                <p>{t('entities.launchEnricher')}</p>
               )}
             </TooltipContent>
           </Tooltip>
@@ -210,7 +215,7 @@ const ActionBar = () => {
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Clear selection</p>
+            <p>{t('entities.clearSelection')}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

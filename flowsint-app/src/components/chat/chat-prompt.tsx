@@ -6,6 +6,7 @@ import { useGraphStore } from '@/stores/graph-store'
 import { useRef, useEffect, memo, useState } from 'react'
 import { useNodesDisplaySettings } from '@/stores/node-display-settings'
 import { ChatContextFormat } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 interface ChatPanelProps {
   onSend: (text: string, context?: string[]) => void
@@ -20,6 +21,7 @@ const formatContext = (context: ChatContextFormat[]): string[] => {
 }
 
 export const ChatPanel = ({ onSend, isLoading }: ChatPanelProps) => {
+  const { t } = useTranslation()
   const [input, setInput] = useState('')
   const selectedNodes = useGraphStore((s) => s.selectedNodesWithEdgesAsList)
   const clearSelectedNodes = useGraphStore((s) => s.clearSelectedNodes)
@@ -61,7 +63,7 @@ export const ChatPanel = ({ onSend, isLoading }: ChatPanelProps) => {
             <ContextList context={displayItems} />
             {remainingCount > 0 && (
               <Badge variant="outline" className="text-xs">
-                +{remainingCount} more
+                {t('chat.moreCount', { count: remainingCount })}
               </Badge>
             )}
             <Button
@@ -79,7 +81,7 @@ export const ChatPanel = ({ onSend, isLoading }: ChatPanelProps) => {
             <Textarea
               ref={textareaRef}
               autoFocus
-              placeholder="Ask me anything about your investigation..."
+              placeholder={t('chat.inputPlaceholder')}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -122,6 +124,7 @@ export const ChatPanel = ({ onSend, isLoading }: ChatPanelProps) => {
 }
 
 export const ContextList = memo(({ context }: { context: ChatContextFormat[] }) => {
+  const { t } = useTranslation()
   const colors = useNodesDisplaySettings((s) => s.colors)
   return (
     <div className="flex flex-nowrap overflow-x-auto hide-scrollbar gap-1.5 items-center px-1">
@@ -135,7 +138,7 @@ export const ContextList = memo(({ context }: { context: ChatContextFormat[] }) 
               className="flex items-center border border-border gap-1.5 text-xs"
             >
               <span style={{ background: color }} className="w-1.5 h-1.5 rounded-full" />
-              {item.nodeLabel || 'Unknown'}
+              {item.nodeLabel || t('chat.unknown')}
             </Badge>
           )
         }
@@ -150,9 +153,9 @@ export const ContextList = memo(({ context }: { context: ChatContextFormat[] }) 
             className="flex items-center border border-border gap-1.5 text-xs"
           >
             <span style={{ background: fromColor }} className="w-1.5 h-1.5 rounded-full" />
-            {item.fromLabel || 'Unknown'} {'->'}
+            {item.fromLabel || t('chat.unknown')} {'->'}
             <span style={{ background: toColor }} className="w-1.5 h-1.5 rounded-full" />
-            {item.toLabel || 'Unknown'}
+            {item.toLabel || t('chat.unknown')}
           </Badge>
         )
       })}

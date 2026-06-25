@@ -18,6 +18,7 @@ import { useActionItems } from '@/hooks/use-action-items'
 import { toast } from 'sonner'
 import { useGraphControls } from '@/stores/graph-controls-store'
 import { v4 as uuidv4 } from 'uuid'
+import { useTranslation } from 'react-i18next'
 
 interface EntityMapping {
   id: string
@@ -119,6 +120,7 @@ const EntityRow = memo(
     onLabelChange: (id: string, label: string) => void
     onFieldChange: (id: string, field: string, value: string) => void
   }) => {
+    const { t } = useTranslation()
     // Create stable callbacks for this specific row
     const handleInclude = useCallback(
       (checked: boolean) => {
@@ -170,7 +172,7 @@ const EntityRow = memo(
             value={mapping.nodeLabel}
             onChange={handleLabel}
             disabled={!mapping.include}
-            placeholder="Label..."
+            placeholder={t('importData.labelPlaceholder')}
           />
         </div>
         {fields.map((field) => (
@@ -229,6 +231,7 @@ const SimpleTypeTable = memo(
     onLabelChange,
     onFieldChange
   }: TypeTableProps) => {
+    const { t } = useTranslation()
     const totalPages = Math.ceil(mappings.length / itemsPerPage)
     const startIndex = (currentPage - 1) * itemsPerPage
     const endIndex = startIndex + itemsPerPage
@@ -262,13 +265,13 @@ const SimpleTypeTable = memo(
             {/* Sticky header */}
             <div className="flex bg-muted sticky top-0 z-10 border-b">
               <div className="px-3 py-2 text-left text-xs font-medium border-r w-[60px] shrink-0">
-                Include
+                {t('importData.columnInclude')}
               </div>
               <div className="px-3 py-2 text-left text-xs font-medium border-r w-[160px] shrink-0">
-                Type
+                {t('importData.columnType')}
               </div>
               <div className="px-3 py-2 text-left text-xs font-medium border-r w-[200px] shrink-0">
-                Label
+                {t('importData.columnLabel')}
               </div>
               {fields.map((field) => (
                 <div
@@ -302,7 +305,7 @@ const SimpleTypeTable = memo(
         {/* Pagination controls */}
         <div className="flex items-center justify-between pt-3 gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Rows per page:</span>
+            <span className="text-xs text-muted-foreground">{t('importData.rowsPerPage')}</span>
             <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
               <SelectTrigger className="h-8 w-[70px]">
                 <SelectValue />
@@ -317,7 +320,8 @@ const SimpleTypeTable = memo(
 
           <div className="flex items-center gap-4">
             <span className="text-xs text-muted-foreground">
-              {startIndex + 1}-{Math.min(endIndex, mappings.length)} of {mappings.length}
+              {startIndex + 1}-{Math.min(endIndex, mappings.length)} {t('importData.of')}{' '}
+              {mappings.length}
             </span>
             <div className="flex items-center gap-1">
               <Button
@@ -353,6 +357,7 @@ export function ImportPreview({
   onSuccess,
   onCancel
 }: ImportPreviewProps) {
+  const { t } = useTranslation()
   const { actionItems, isLoading: isLoadingActionItems } = useActionItems()
   const refetchGraph = useGraphControls((s) => s.refetchGraph)
   const regenerateLayout = useGraphControls((s) => s.regenerateLayout)
@@ -548,11 +553,13 @@ export function ImportPreview({
         setTimeout(onSuccess, 2000)
         refetchGraph()
         setIsImporting(false)
-        toast(`Import successful !`, {
+        toast(t('importData.toastSuccessTitle'), {
           duration: 6000,
-          description: `${result.nodes_created} entities were imported. You can now display them with the layout commands.`,
+          description: t('importData.toastSuccessDescription', {
+            count: result.nodes_created
+          }),
           action: {
-            label: 'Beautify layout',
+            label: t('importData.beautifyLayout'),
             onClick: () => regenerateLayout(currentLayoutType)
           }
         })
@@ -613,9 +620,9 @@ export function ImportPreview({
             <>
               <CheckCircle2 className="h-16 w-16 text-green-500" />
               <div className="text-center">
-                <h3 className="text-lg font-semibold">Import Successful!</h3>
+                <h3 className="text-lg font-semibold">{t('importData.resultSuccessTitle')}</h3>
                 <p className="text-sm text-muted-foreground mt-2">
-                  {importResult.nodes_created} entities created
+                  {t('importData.resultEntitiesCreated', { count: importResult.nodes_created })}
                 </p>
               </div>
             </>
@@ -623,14 +630,17 @@ export function ImportPreview({
             <>
               <XCircle className="h-16 w-16 text-orange-500" />
               <div className="text-center">
-                <h3 className="text-lg font-semibold">Import Completed with Errors</h3>
+                <h3 className="text-lg font-semibold">{t('importData.resultErrorsTitle')}</h3>
                 <p className="text-sm text-muted-foreground mt-2">
-                  {importResult.nodes_created} created, {importResult.errors.length} errors
+                  {t('importData.resultCreatedWithErrors', {
+                    created: importResult.nodes_created,
+                    errors: importResult.errors.length
+                  })}
                 </p>
               </div>
               {importResult.errors.length > 0 && (
                 <div className="w-full mt-4">
-                  <Label>Errors:</Label>
+                  <Label>{t('importData.errorsLabel')}</Label>
                   <div className="h-32 w-full rounded-md border p-2 mt-2 overflow-auto">
                     {importResult.errors.map((error: string, idx: number) => (
                       <p key={idx} className="text-xs text-red-500 mb-1">
@@ -643,7 +653,7 @@ export function ImportPreview({
             </>
           )}
           <Button onClick={onSuccess} className="mt-4">
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </div>
@@ -665,7 +675,7 @@ export function ImportPreview({
               </TabsTrigger>
             ))}
             <TabsTrigger key={'edges'} value={'edges'} className="flex-1">
-              Edges ({edges.length})
+              {t('importData.edges')} ({edges.length})
             </TabsTrigger>
           </TabsList>
         </div>
@@ -712,11 +722,13 @@ export function ImportPreview({
 
       <div className="flex justify-end gap-2 px-4 py-3 border-t shrink-0 bg-background">
         <Button variant="outline" onClick={onCancel} disabled={isImporting}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button onClick={handleImport} disabled={isImporting}>
           {isImporting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isImporting ? 'Importing...' : `Import ${includedCount} entities`}
+          {isImporting
+            ? t('importData.importing')
+            : t('importData.importEntities', { count: includedCount })}
         </Button>
       </div>
     </div>

@@ -35,6 +35,7 @@ import { useNodesDisplaySettings, ITEM_TYPES, ItemType } from '@/stores/node-dis
 import IconPicker, { NodeIconTrigger } from '@/components/shared/icon-picker'
 import { ColorPicker } from '@/components/shared/color-picker'
 import { usePermissions } from '@/hooks/use-can'
+import { useTranslation } from 'react-i18next'
 
 // SettingItem Components
 interface SettingItemProps {
@@ -77,6 +78,7 @@ interface DynamicSettingProps {
 }
 
 function DynamicSetting({ categoryId, settingKey, setting, onValueChange }: DynamicSettingProps) {
+  const { t } = useTranslation()
   // For force settings, always use slider regardless of type
   const shouldUseSlider = categoryId === 'graph' || setting.type === 'slider'
   const displayName = setting.name || settingKey
@@ -114,7 +116,7 @@ function DynamicSetting({ categoryId, settingKey, setting, onValueChange }: Dyna
           <div className="flex items-center space-x-2">
             <Switch checked={setting.value} onCheckedChange={onValueChange} />
             <span className="text-sm text-muted-foreground">
-              {setting.value ? 'Enabled' : 'Disabled'}
+              {setting.value ? t('settings.enabled') : t('settings.disabled')}
             </span>
           </div>
         </SettingItem>
@@ -125,7 +127,7 @@ function DynamicSetting({ categoryId, settingKey, setting, onValueChange }: Dyna
         <SettingItem label={displayName} description={setting.description} inline={true}>
           <Select value={setting.value} onValueChange={onValueChange}>
             <SelectTrigger className="h-9 w-48">
-              <SelectValue placeholder="Select option" />
+              <SelectValue placeholder={t('settings.selectOption')} />
             </SelectTrigger>
             <SelectContent>
               {setting.options?.map((option: any) => (
@@ -145,7 +147,7 @@ function DynamicSetting({ categoryId, settingKey, setting, onValueChange }: Dyna
             type="text"
             value={setting.value}
             onChange={(e) => onValueChange(e.target.value)}
-            placeholder="Enter value"
+            placeholder={t('settings.enterValue')}
             className="h-10"
           />
         </SettingItem>
@@ -157,7 +159,7 @@ function DynamicSetting({ categoryId, settingKey, setting, onValueChange }: Dyna
           <Textarea
             value={setting.value}
             onChange={(e) => onValueChange(e.target.value)}
-            placeholder="Enter value"
+            placeholder={t('settings.enterValue')}
             rows={4}
             className="resize-none"
           />
@@ -178,7 +180,7 @@ function DynamicSetting({ categoryId, settingKey, setting, onValueChange }: Dyna
             type="number"
             value={setting.value}
             onChange={(e) => onValueChange(Number(e.target.value))}
-            placeholder="Enter number"
+            placeholder={t('settings.enterNumber')}
             min={setting.min}
             max={setting.max}
             step={setting.step}
@@ -190,13 +192,16 @@ function DynamicSetting({ categoryId, settingKey, setting, onValueChange }: Dyna
     default:
       return (
         <SettingItem label={displayName} description={setting.description} inline={false}>
-          <div className="text-sm text-muted-foreground">Unknown setting type: {setting.type}</div>
+          <div className="text-sm text-muted-foreground">
+            {t('settings.unknownSettingType')}: {setting.type}
+          </div>
         </SettingItem>
       )
   }
 }
 
 function NodeColorsSection() {
+  const { t } = useTranslation()
   const storeColors = useNodesDisplaySettings((s) => s.colors)
   const setColor = useNodesDisplaySettings((s) => s.setColor)
   const resetSettings = useNodesDisplaySettings((s) => s.resetSettings)
@@ -274,14 +279,12 @@ function NodeColorsSection() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h3 className="text-lg font-semibold text-foreground">Node</h3>
-        <p className="text-sm text-muted-foreground">
-          Customize the node styles for each type in the graph visualization.
-        </p>
+        <h3 className="text-lg font-semibold text-foreground">{t('settings.node')}</h3>
+        <p className="text-sm text-muted-foreground">{t('settings.nodeDescription')}</p>
       </div>
       <div className="border-b flex items-center gap-2 pb-4">
         <Button variant="outline" size="sm" onClick={handleReset} className="grow shadow-none">
-          Reset to default
+          {t('settings.resetToDefault')}
         </Button>
         <Button
           variant="outline"
@@ -289,7 +292,7 @@ function NodeColorsSection() {
           onClick={handleRandomizeColors}
           className="grow shadow-none"
         >
-          Randomize
+          {t('settings.randomize')}
         </Button>
       </div>
       <div className="pr-4">
@@ -336,6 +339,7 @@ interface DynamicSectionProps {
 }
 
 function DynamicSection({ categoryId, category, title, description }: DynamicSectionProps) {
+  const { t } = useTranslation()
   const getPresets = useGraphSettingsStore((s) => s.getPresets)
   const applyPreset = useGraphSettingsStore((s) => s.applyPreset)
   const resetSettings = useGraphSettingsStore((s) => s.resetSettings)
@@ -349,9 +353,9 @@ function DynamicSection({ categoryId, category, title, description }: DynamicSec
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         <div className="text-sm text-muted-foreground">
-          No settings available for category: {category}
+          {t('settings.noSettingsForCategory')}: {category}
           <br />
-          Available categories: {Object.keys(category || {}).join(', ')}
+          {t('settings.availableCategories')}: {Object.keys(category || {}).join(', ')}
         </div>
       </div>
     )
@@ -372,9 +376,11 @@ function DynamicSection({ categoryId, category, title, description }: DynamicSec
       {categoryId === 'graph' && (
         <div className="border-b pb-6">
           <div className="space-y-1">
-            <h4 className="text-md font-semibold text-foreground">Force graph presets</h4>
+            <h4 className="text-md font-semibold text-foreground">
+              {t('settings.forceGraphPresets')}
+            </h4>
             <p className="text-sm text-muted-foreground">
-              Apply predefined configurations for different graph layouts.
+              {t('settings.forceGraphPresetsDescription')}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 mt-4">
@@ -385,7 +391,7 @@ function DynamicSection({ categoryId, category, title, description }: DynamicSec
                 size="sm"
                 onClick={() => {
                   applyPreset(presetName)
-                  toast.success('Settings saved. Re-apply a layout to see changes.')
+                  toast.success(t('settings.settingsSavedReapply'))
                 }}
                 className="justify-start shadow-none"
               >
@@ -400,7 +406,7 @@ function DynamicSection({ categoryId, category, title, description }: DynamicSec
               onClick={() => resetSettings()}
               className="w-full shadow-none"
             >
-              Reset to defaults
+              {t('settings.resetToDefaults')}
             </Button>
           </div>
         </div>
@@ -422,6 +428,7 @@ function DynamicSection({ categoryId, category, title, description }: DynamicSec
 }
 
 export default function GlobalSettings() {
+  const { t } = useTranslation()
   const { canEdit } = usePermissions()
   const settingsModalOpen = useGraphSettingsStore((s) => s.settingsModalOpen)
   const setSettingsModalOpen = useGraphSettingsStore((s) => s.setSettingsModalOpen)
@@ -486,12 +493,14 @@ export default function GlobalSettings() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.sketches.detail(id)
       })
-      toast.success('Sketch updated successfully')
+      toast.success(t('settings.sketchUpdatedSuccessfully'))
       setSettingsModalOpen(false)
     },
     onError: (error) => {
       toast.error(
-        'Failed to update sketch: ' + (error instanceof Error ? error.message : 'Unknown error')
+        t('settings.failedToUpdateSketch') +
+          ': ' +
+          (error instanceof Error ? error.message : t('settings.unknownError'))
       )
     }
   })
@@ -513,10 +522,8 @@ export default function GlobalSettings() {
       <Sheet open={settingsModalOpen} onOpenChange={setSettingsModalOpen}>
         <SheetContent className="w-full sm:max-w-xl">
           <SheetHeader>
-            <SheetTitle>General settings</SheetTitle>
-            <SheetDescription>
-              Make changes to your sketch settings here. Click save when you&apos;re done.
-            </SheetDescription>
+            <SheetTitle>{t('settings.generalSettings')}</SheetTitle>
+            <SheetDescription>{t('settings.generalSettingsDescription')}</SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 mt-6">
             <div className="grid gap-2">
@@ -542,11 +549,11 @@ export default function GlobalSettings() {
       <Sheet open={settingsModalOpen} onOpenChange={setSettingsModalOpen}>
         <SheetContent className="w-full sm:max-w-xl">
           <SheetHeader>
-            <SheetTitle>General settings</SheetTitle>
-            <SheetDescription>Error loading sketch data. Please try again.</SheetDescription>
+            <SheetTitle>{t('settings.generalSettings')}</SheetTitle>
+            <SheetDescription>{t('settings.errorLoadingSketch')}</SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 mt-6">
-            <Button onClick={() => refetch()}>Retry</Button>
+            <Button onClick={() => refetch()}>{t('settings.retry')}</Button>
           </div>
         </SheetContent>
       </Sheet>
@@ -558,41 +565,43 @@ export default function GlobalSettings() {
       return (
         <div className="space-y-6">
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-foreground">Sketch information</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              {t('settings.sketchInformation')}
+            </h3>
             <p className="text-sm text-muted-foreground">
-              Configure the basic details and metadata for your sketch.
+              {t('settings.sketchInformationDescription')}
             </p>
           </div>
 
           <div className="space-y-5">
             <TextSetting
-              label="Title"
-              description="The name of your sketch"
+              label={t('settings.title')}
+              description={t('settings.titleDescription')}
               value={formData.title}
               onValueChange={canEdit ? (value) => handleInputChange('title', value) : () => {}}
-              placeholder="Enter sketch title"
+              placeholder={t('settings.enterSketchTitle')}
             />
 
             <TextareaSetting
-              label="Description"
-              description="A brief description of what this sketch represents"
+              label={t('settings.description')}
+              description={t('settings.descriptionDescription')}
               value={formData.description}
               onValueChange={canEdit ? (value) => handleInputChange('description', value) : () => {}}
-              placeholder="Enter sketch description"
+              placeholder={t('settings.enterSketchDescription')}
               rows={4}
             />
 
             <SelectSetting
-              label="Status"
-              description="The current status of this sketch"
+              label={t('settings.status')}
+              description={t('settings.statusDescription')}
               value={formData.status}
               onValueChange={canEdit ? (value) => handleInputChange('status', value) : () => {}}
               options={[
-                { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' },
-                { value: 'archived', label: 'Archived' }
+                { value: 'active', label: t('settings.statusActive') },
+                { value: 'inactive', label: t('settings.statusInactive') },
+                { value: 'archived', label: t('settings.statusArchived') }
               ]}
-              placeholder="Select status"
+              placeholder={t('settings.selectStatus')}
             />
           </div>
 
@@ -600,7 +609,7 @@ export default function GlobalSettings() {
             <div className="flex gap-3 pt-6">
               <SheetClose asChild>
                 <Button variant="outline" type="button" className="flex-1 shadow-none">
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
               </SheetClose>
               <Button
@@ -609,7 +618,7 @@ export default function GlobalSettings() {
                 onClick={handleSubmit}
                 className="flex-1 shadow-none"
               >
-                {updateMutation.isPending ? 'Saving...' : 'Save changes'}
+                {updateMutation.isPending ? t('settings.saving') : t('settings.saveChanges')}
               </Button>
             </div>
           )}
@@ -635,15 +644,15 @@ export default function GlobalSettings() {
       )
     }
 
-    return <div>Section not found.</div>
+    return <div>{t('settings.sectionNotFound')}</div>
   }
 
   return (
     <Sheet open={settingsModalOpen} onOpenChange={setSettingsModalOpen}>
       <SheetContent className="w-full sm:max-w-2xl flex flex-col overflow-hidden p-0">
         <SheetHeader className="px-6 pt-6 pb-4">
-          <SheetTitle>Sketch settings</SheetTitle>
-          <SheetDescription>Configure your sketch settings and preferences.</SheetDescription>
+          <SheetTitle>{t('settings.sketchSettings')}</SheetTitle>
+          <SheetDescription>{t('settings.sketchSettingsDescription')}</SheetDescription>
         </SheetHeader>
         <Tabs
           value={activeSection}
@@ -659,7 +668,7 @@ export default function GlobalSettings() {
                 </TabsTrigger>
               ))}
               <TabsTrigger value="nodecolors" className="h-9">
-                Node
+                {t('settings.node')}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -778,6 +787,7 @@ function SelectSetting({
 }
 
 export function KeyboardShortcuts() {
+  const { t } = useTranslation()
   const keyboardShortcutsOpen = useGraphSettingsStore((s) => s.keyboardShortcutsOpen)
   const setKeyboardShortcutsOpen = useGraphSettingsStore((s) => s.setKeyboardShortcutsOpen)
 
@@ -786,38 +796,38 @@ export function KeyboardShortcuts() {
 
   const shortcuts = [
     {
-      category: 'Navigation & panels',
+      category: t('settings.shortcutsNavigationPanels'),
       items: [
-        { key: `${modKey}+L`, description: 'Toggle analysis panel' },
-        { key: `${modKey}+B`, description: 'Toggle panel' },
-        { key: `${modKey}+D`, description: 'Toggle console' },
-        { key: `${modKey}+J`, description: 'Open command palette' }
+        { key: `${modKey}+L`, description: t('settings.shortcutToggleAnalysisPanel') },
+        { key: `${modKey}+B`, description: t('settings.shortcutTogglePanel') },
+        { key: `${modKey}+D`, description: t('settings.shortcutToggleConsole') },
+        { key: `${modKey}+J`, description: t('settings.shortcutOpenCommandPalette') }
       ]
     },
     {
-      category: 'Graph',
+      category: t('settings.shortcutsGraph'),
       items: [
-        { key: `S`, description: 'Hold to activate selection' },
-        { key: `Shift`, description: 'Hold while clicking on nodes to add to selection' }
+        { key: `S`, description: t('settings.shortcutHoldToActivateSelection') },
+        { key: `Shift`, description: t('settings.shortcutHoldToAddSelection') }
       ]
     },
     {
-      category: 'Settings',
+      category: t('settings.shortcutsSettings'),
       items: [
-        { key: `${modKey}+G`, description: 'Toggle graph settings' },
-        { key: `${modKey}+K`, description: 'Toggle keyboard shortcuts' }
+        { key: `${modKey}+G`, description: t('settings.shortcutToggleGraphSettings') },
+        { key: `${modKey}+K`, description: t('settings.shortcutToggleKeyboardShortcuts') }
       ]
     },
     {
-      category: 'Chat & assistant',
+      category: t('settings.shortcutsChatAssistant'),
       items: [
-        { key: `${modKey}+E`, description: 'Toggle chat assistant' },
-        { key: 'Escape', description: 'Close chat assistant' }
+        { key: `${modKey}+E`, description: t('settings.shortcutToggleChatAssistant') },
+        { key: 'Escape', description: t('settings.shortcutCloseChatAssistant') }
       ]
     },
     {
-      category: 'File operations',
-      items: [{ key: `${modKey}+S`, description: 'Save (Analysis/Flow)' }]
+      category: t('settings.shortcutsFileOperations'),
+      items: [{ key: `${modKey}+S`, description: t('settings.shortcutSaveAnalysisFlow') }]
     }
   ]
 
@@ -825,8 +835,8 @@ export function KeyboardShortcuts() {
     <Sheet open={keyboardShortcutsOpen} onOpenChange={setKeyboardShortcutsOpen}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto py-3">
         <SheetHeader>
-          <SheetTitle>Keyboard Shortcuts</SheetTitle>
-          <SheetDescription>Here is the list of all available keyboard shortcuts.</SheetDescription>
+          <SheetTitle>{t('settings.keyboardShortcuts')}</SheetTitle>
+          <SheetDescription>{t('settings.keyboardShortcutsDescription')}</SheetDescription>
         </SheetHeader>
         <div className="space-y-6 mt-6  p-4">
           {shortcuts.map((category) => (
