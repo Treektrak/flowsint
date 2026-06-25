@@ -44,6 +44,7 @@ import { TagsInput } from '@/components/ui/tags-input'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { MinimalTiptapEditor } from '@/components/analyses/editor/minimal-tiptap'
 import type { Content } from '@tiptap/react'
+import { useTranslation } from 'react-i18next'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -113,6 +114,7 @@ function TitleInput({
   value: string
   onChange: (val: string) => void
 }) {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -137,7 +139,7 @@ function TitleInput({
         className="min-w-0 flex-1 text-left"
       >
         <span className="block truncate text-2xl font-bold">
-          {value || <span className="text-muted-foreground/40">Untitled</span>}
+          {value || <span className="text-muted-foreground/40">{t('panels.untitled')}</span>}
         </span>
       </button>
     )
@@ -158,7 +160,7 @@ function TitleInput({
           setEditing(false)
         }
       }}
-      placeholder="Untitled"
+      placeholder={t('panels.untitled')}
     />
   )
 }
@@ -228,6 +230,7 @@ function PropertyInput({
   placeholder?: string
   onBlur: (val: string) => void
 }) {
+  const { t } = useTranslation()
   const [draft, setDraft] = useState(value)
 
   useEffect(() => {
@@ -244,7 +247,7 @@ function PropertyInput({
         if (e.key === 'Enter') onBlur(draft)
       }}
       className="w-full bg-transparent outline-none placeholder:text-muted-foreground/30 focus:bg-muted/20 px-1 rounded transition-colors"
-      placeholder={placeholder ?? 'Empty'}
+      placeholder={placeholder ?? t('panels.empty')}
     />
   )
 }
@@ -265,6 +268,7 @@ StatusCodeBadge.displayName = 'StatusCodeBadge'
 // ── Main Component ────────────────────────────────────────────────────────────
 
 const DetailsPanel = memo(() => {
+  const { t } = useTranslation()
   const { id: sketchId } = useParams({ strict: false })
   const { canEdit } = usePermissions()
   const nodesLength = useGraphStore((s) => s.nodesLength)
@@ -480,7 +484,7 @@ const DetailsPanel = memo(() => {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8">
         <MousePointer className="h-5 w-5 text-muted-foreground/40 mb-3" />
-        <p className="text-[13px] text-muted-foreground/60">Select a node</p>
+        <p className="text-[13px] text-muted-foreground/60">{t('panels.selectNode')}</p>
       </div>
     )
   }
@@ -525,7 +529,7 @@ const DetailsPanel = memo(() => {
           <LaunchFlow values={[node.id]} type={node.nodeType}>
             <Button className="rounded-full h-8 gap-1.5 px-4 text-sm" size="sm">
               <Rocket className="size-3.5" strokeWidth={1.7} />
-              Enrich
+              {t('panels.enrich')}
             </Button>
           </LaunchFlow>
         </div>
@@ -539,26 +543,26 @@ const DetailsPanel = memo(() => {
               value="properties"
               className="flex-1 rounded-none border-0 border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs h-full"
             >
-              Properties
+              {t('panels.properties')}
             </TabsTrigger>
             <TabsTrigger
               value="neighbors"
               className="flex-1 rounded-none border-0 border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs h-full"
             >
-              Neighbors
+              {t('panels.neighbors')}
             </TabsTrigger>
             <TabsTrigger
               value="relations"
               className="flex-1 rounded-none border-0 border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs h-full"
             >
-              Relations
+              {t('panels.relations')}
             </TabsTrigger>
             {canEdit && (
               <TabsTrigger
                 value="appearance"
                 className="flex-1 rounded-none border-0 border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs h-full"
               >
-                Style
+                {t('panels.style')}
               </TabsTrigger>
             )}
           </TabsList>
@@ -566,7 +570,7 @@ const DetailsPanel = memo(() => {
 
         {/* Properties tab */}
         <TabsContent value="properties" className="flex-1 min-h-0 overflow-y-auto mt-0 pb-6">
-          <CollapsibleSection label="Properties" defaultOpen noBorderTop>
+          <CollapsibleSection label={t('panels.properties')} defaultOpen noBorderTop>
             {propertiesFields.length > 0 ? (
               propertiesFields.map(([key, value]) => (
                 <PropertyRow
@@ -582,7 +586,7 @@ const DetailsPanel = memo(() => {
                         className="scale-75"
                       />
                     ) : (
-                      <span className="text-muted-foreground">{value ? 'Yes' : 'No'}</span>
+                      <span className="text-muted-foreground">{value ? t('panels.yes') : t('panels.no')}</span>
                     )
                   ) : typeof value === 'number' ? (
                     <StatusCodeBadge statusCode={value} />
@@ -604,7 +608,7 @@ const DetailsPanel = memo(() => {
                         value={value || []}
                         onChange={(tags) => handlePropertyBlur(key, tags)}
                         orientation='vertical'
-                        placeholder={value?.length === 0 ? "Empty" : `Enter ${key.toLowerCase()}`}
+                        placeholder={value?.length === 0 ? t('panels.empty') : t('panels.enterValue', { field: key.toLowerCase() })}
                       />
                     ) : (
                       <span className="text-muted-foreground truncate">{Array.isArray(value) ? value.join(', ') : formatValue(value)}</span>
@@ -620,17 +624,17 @@ const DetailsPanel = memo(() => {
                 </PropertyRow>
               ))
             ) : (
-              <p className="px-6 py-2 text-sm text-muted-foreground/40">No properties</p>
+              <p className="px-6 py-2 text-sm text-muted-foreground/40">{t('panels.noProperties')}</p>
             )}
           </CollapsibleSection>
 
-          <CollapsibleSection label="Notes" defaultOpen>
+          <CollapsibleSection label={t('panels.notes')} defaultOpen>
             <div className="min-h-[120px]">
               <MinimalTiptapEditor
                 value={formData.notes}
                 onChange={canEdit ? handleNotesChange : undefined}
                 output="html"
-                placeholder={canEdit ? "Write something..." : ""}
+                placeholder={canEdit ? t('panels.writeSomething') : ""}
                 showToolbar={false}
                 editorContentClassName="px-6 py-3 !max-w-none prose-sm"
                 immediatelyRender={false}
@@ -640,7 +644,7 @@ const DetailsPanel = memo(() => {
           </CollapsibleSection>
 
           {metadataFields.length > 0 && (
-            <CollapsibleSection label="Metadata" defaultOpen={false}>
+            <CollapsibleSection label={t('panels.metadata')} defaultOpen={false}>
               {metadataFields.map(([key, value]) => (
                 <PropertyRow
                   key={key}
@@ -680,8 +684,8 @@ const DetailsPanel = memo(() => {
 
         {/* Appearance tab */}
         <TabsContent value="appearance" className="flex-1 min-h-0 overflow-y-auto mt-0 pb-6">
-          <CollapsibleSection label="Visual" defaultOpen noBorderTop>
-            <PropertyRow label={`Size (${nodeSize})`}>
+          <CollapsibleSection label={t('panels.visual')} defaultOpen noBorderTop>
+            <PropertyRow label={`${t('panels.size')} (${nodeSize})`}>
               <Slider
                 value={[nodeSize]}
                 onValueChange={([val]) => handleSizeChange(val)}
@@ -691,7 +695,7 @@ const DetailsPanel = memo(() => {
               />
             </PropertyRow>
 
-            <PropertyRow label="Color">
+            <PropertyRow label={t('panels.color')}>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {COLORS.map((color) => (
                   <button
@@ -709,7 +713,7 @@ const DetailsPanel = memo(() => {
               </div>
             </PropertyRow>
 
-            <PropertyRow label="Shape">
+            <PropertyRow label={t('panels.shape')}>
               <ToggleGroup
                 onValueChange={(value) => handleChange('nodeShape', value || null)}
                 type="single"
@@ -728,19 +732,19 @@ const DetailsPanel = memo(() => {
               </ToggleGroup>
             </PropertyRow>
 
-            <PropertyRow label="Icon">
+            <PropertyRow label={t('panels.icon')}>
               <button
                 onClick={() => setOpenIconPicker(true)}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                {formData.nodeIcon || 'Default'}
+                {formData.nodeIcon || t('panels.default')}
               </button>
             </PropertyRow>
 
-            <PropertyRow label="Image">
+            <PropertyRow label={t('panels.image')}>
               <PropertyInput
                 value={formData.nodeImage || ''}
-                placeholder="URL..."
+                placeholder={t('panels.urlPlaceholder')}
                 onBlur={(val) => {
                   const newFd = { ...formDataRef.current, nodeImage: val || null }
                   formDataRef.current = newFd

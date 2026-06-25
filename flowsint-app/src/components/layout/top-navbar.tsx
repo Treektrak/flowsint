@@ -33,8 +33,10 @@ import { sketchService } from '@/api/sketch-service'
 import { toast } from 'sonner'
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut'
 import { usePermissions } from '@/hooks/use-can'
+import { useTranslation } from 'react-i18next'
 
 export const TopNavbar = memo(() => {
+  const { t } = useTranslation()
   const { investigationId, id, type } = useParams({ strict: false })
   const toggleAnalysis = useLayoutStore((s) => s.toggleAnalysis)
   const isOpenAnalysis = useLayoutStore((s) => s.isOpenAnalysis)
@@ -84,7 +86,7 @@ export const TopNavbar = memo(() => {
             <>
               <Switch checked={isOpenAnalysis} onCheckedChange={handleToggleAnalysis} id="notes" />
               <Label htmlFor="notes">
-                Toggle notes
+                {t('nav.toggleNotes')}
                 <span className="text-[.7rem] -ml-1 opacity-60">({isMac ? '⌘' : 'ctrl'}L)</span>
               </Label>
             </>
@@ -104,6 +106,7 @@ export function InvestigationMenu({
   investigationId?: string
   sketchId: string
 }) {
+  const { t } = useTranslation()
   const { canEdit } = usePermissions()
   const toggleSettingsModal = useGraphSettingsStore((s) => s.toggleSettingsModal)
   const toggleKeyboardShortcutsModal = useGraphSettingsStore((s) => s.toggleKeyboardShortcutsModal)
@@ -168,14 +171,14 @@ export function InvestigationMenu({
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuLabel>Settings</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('nav.settings')}</DropdownMenuLabel>
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={toggleSettingsModal}>
-            General
+            {t('nav.general')}
             <DropdownMenuShortcut>⌘G</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={toggleKeyboardShortcutsModal}>
-            Keyboard shortcuts
+            {t('nav.keyboardShortcuts')}
             <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -199,11 +202,11 @@ export function InvestigationMenu({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setImportModalOpen(true)}>
-              <Upload /> Import entities
+              <Upload /> {t('nav.importEntities')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleDelete} variant="destructive">
-              Delete sketch
+              {t('nav.deleteSketch')}
             </DropdownMenuItem>
           </>
         )}

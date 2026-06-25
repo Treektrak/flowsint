@@ -26,6 +26,7 @@ import BaseContextMenu from '@/components/xyflow/context-menu'
 import { useGraphStore } from '@/stores/graph-store'
 import { CopyButton } from '@/components/copy'
 import { usePermissions } from '@/hooks/use-can'
+import { useTranslation } from 'react-i18next'
 
 interface GraphContextMenuProps {
   node: GraphNode
@@ -56,6 +57,7 @@ export default function ContextMenu({
   setMenu,
   ...props
 }: GraphContextMenuProps) {
+  const { t } = useTranslation()
   const { id: sketchId } = useParams({ strict: false })
   const { canEdit } = usePermissions()
   const [activeTab, setActiveTab] = useState('enrichers')
@@ -142,11 +144,11 @@ export default function ContextMenu({
             <TabsList className="w-full h-9">
               <TabsTrigger value="enrichers" className="flex-1" onClick={(e) => e.stopPropagation()}>
                 <Zap className="h-3 w-3 mr-1" />
-                Enrichers
+                {t('enrichers.tabEnrichers')}
               </TabsTrigger>
               <TabsTrigger value="flows" className="flex-1" onClick={(e) => e.stopPropagation()}>
                 <FileCode2 className="h-3 w-3 mr-1" />
-                Flows
+                {t('enrichers.tabFlows')}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -163,7 +165,7 @@ export default function ContextMenu({
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search enrichers..."
+                placeholder={t('enrichers.searchEnrichersPlaceholder')}
                 value={enrichersSearchQuery}
                 onChange={(e) => {
                   e.stopPropagation()
@@ -207,7 +209,7 @@ export default function ContextMenu({
                             <BadgeCheck className="h-3 w-3 text-green-400" />
                           )}{' '}
                         </span>{' '}
-                        {enricher.name || '(Unnamed enricher)'}
+                        {enricher.name || t('enrichers.unnamedEnricher')}
                       </p>
                       {enricher.description && (
                         <p className="text-xs text-muted-foreground truncate">
@@ -225,7 +227,7 @@ export default function ContextMenu({
             ) : (
               <div className="p-4 text-center">
                 <p className="text-sm text-muted-foreground">
-                  {enrichersSearchQuery ? 'No enrichers found' : 'No enrichers available'}
+                  {enrichersSearchQuery ? t('enrichers.noEnrichersFound') : t('enrichers.noEnrichersAvailable')}
                 </p>
               </div>
             )}
@@ -240,7 +242,7 @@ export default function ContextMenu({
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search flows..."
+                placeholder={t('enrichers.searchFlowsPlaceholder')}
                 value={flowsSearchQuery}
                 onChange={(e) => {
                   e.stopPropagation()
@@ -284,7 +286,7 @@ export default function ContextMenu({
                             <BadgeCheck className="h-3 w-3 text-green-400" />
                           )}{' '}
                         </span>{' '}
-                        {flow.name || '(Unnamed flow)'}
+                        {flow.name || t('enrichers.unnamedFlow')}
                       </p>
                       {flow.description && (
                         <p className="text-xs text-muted-foreground truncate">{flow.description}</p>
@@ -300,7 +302,7 @@ export default function ContextMenu({
             ) : (
               <div className="p-4 text-center">
                 <p className="text-sm text-muted-foreground">
-                  {flowsSearchQuery ? 'No flows found' : 'No flows available'}
+                  {flowsSearchQuery ? t('enrichers.noFlowsFound') : t('enrichers.noFlowsAvailable')}
                 </p>
               </div>
             )}

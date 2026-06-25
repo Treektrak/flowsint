@@ -24,9 +24,11 @@ import { capitalizeFirstLetter } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Search, FileCode2, Zap, PlusIcon, GitBranch, FileX, Sparkles } from 'lucide-react'
 import { Enricher, Flow } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 const LaunchEnricherOrFlowPanel = memo(
   ({ values, type, children, disabled }: { values: string[]; type: string; children?: React.ReactNode, disabled?: boolean }) => {
+    const { t } = useTranslation()
     const { launchEnricher } = useLaunchEnricher()
     const { launchFlow } = useLaunchFlow()
     const { id: sketch_id } = useParams({ strict: false })
@@ -97,8 +99,8 @@ const LaunchEnricherOrFlowPanel = memo(
           </SheetTrigger>
           <SheetContent className="sm:max-w-xl">
             <SheetHeader>
-              <SheetTitle>Select an enricher</SheetTitle>
-              <SheetDescription>Choose an enricher to launch from the list below.</SheetDescription>
+              <SheetTitle>{t('enrichers.selectEnricherTitle')}</SheetTitle>
+              <SheetDescription>{t('enrichers.selectEnricherDescription')}</SheetDescription>
             </SheetHeader>
 
             {/* Tabs */}
@@ -111,7 +113,7 @@ const LaunchEnricherOrFlowPanel = memo(
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Zap className="h-3 w-3 mr-1" />
-                    Enrichers
+                    {t('enrichers.tabEnrichers')}
                   </TabsTrigger>
                   <TabsTrigger
                     value="flows"
@@ -119,7 +121,7 @@ const LaunchEnricherOrFlowPanel = memo(
                     onClick={(e) => e.stopPropagation()}
                   >
                     <FileCode2 className="h-3 w-3 mr-1" />
-                    Flows
+                    {t('enrichers.tabFlows')}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -135,7 +137,7 @@ const LaunchEnricherOrFlowPanel = memo(
                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <Input
                       type="search"
-                      placeholder="Search enrichers..."
+                      placeholder={t('enrichers.searchEnrichersPlaceholder')}
                       value={enrichersSearchQuery}
                       onChange={(e) => setEnrichersSearchQuery(e.target.value)}
                       className="h-8 pl-7 text-sm"
@@ -196,7 +198,7 @@ const LaunchEnricherOrFlowPanel = memo(
 
                               {enricher.description && (
                                 <CardDescription className="text-sm pl-7">
-                                  {enricher.description || 'No description available'}
+                                  {enricher.description || t('enrichers.noDescriptionAvailable')}
                                 </CardDescription>
                               )}
                             </div>
@@ -217,19 +219,19 @@ const LaunchEnricherOrFlowPanel = memo(
                         <div className="space-y-2">
                           <h3 className="text-lg font-semibold">
                             {enrichersSearchQuery
-                              ? 'No enrichers found'
-                              : 'No enrichers available'}
+                              ? t('enrichers.noEnrichersFound')
+                              : t('enrichers.noEnrichersAvailable')}
                           </h3>
                           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                             {enrichersSearchQuery
-                              ? 'Try adjusting your search terms or browse all available enrichers.'
-                              : 'Enrichers are automated data processing tools that can enrich your investigation data.'}
+                              ? t('enrichers.noEnrichersFoundHint')
+                              : t('enrichers.enrichersEmptyDescription')}
                           </p>
                         </div>
                         {!enrichersSearchQuery && (
                           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                             <Sparkles className="h-3 w-3" />
-                            <span>Enrichers will appear here when available</span>
+                            <span>{t('enrichers.enrichersWillAppear')}</span>
                           </div>
                         )}
                       </div>
@@ -246,7 +248,7 @@ const LaunchEnricherOrFlowPanel = memo(
                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <Input
                       type="search"
-                      placeholder="Search flows..."
+                      placeholder={t('enrichers.searchFlowsPlaceholder')}
                       value={flowsSearchQuery}
                       onChange={(e) => setFlowsSearchQuery(e.target.value)}
                       className="h-8 pl-7 text-sm"
@@ -307,18 +309,22 @@ const LaunchEnricherOrFlowPanel = memo(
 
                               {flow.description && (
                                 <CardDescription className="text-sm pl-7">
-                                  {flow.description || 'No description available'}
+                                  {flow.description || t('enrichers.noDescriptionAvailable')}
                                 </CardDescription>
                               )}
 
                               <div className="flex flex-col space-y-1 text-xs text-muted-foreground pl-7">
                                 <div>
-                                  Created{' '}
-                                  {formatDistanceToNow(flow.created_at, { addSuffix: true })}
+                                  {t('enrichers.createdAt', {
+                                    time: formatDistanceToNow(flow.created_at, { addSuffix: true })
+                                  })}
                                 </div>
                                 <div>
-                                  Updated{' '}
-                                  {formatDistanceToNow(flow.last_updated_at, { addSuffix: true })}
+                                  {t('enrichers.updatedAt', {
+                                    time: formatDistanceToNow(flow.last_updated_at, {
+                                      addSuffix: true
+                                    })
+                                  })}
                                 </div>
                               </div>
                             </div>
@@ -338,24 +344,24 @@ const LaunchEnricherOrFlowPanel = memo(
                         </div>
                         <div className="space-y-2">
                           <h3 className="text-lg font-semibold">
-                            {flowsSearchQuery ? 'No flows found' : 'No flows available'}
+                            {flowsSearchQuery ? t('enrichers.noFlowsFound') : t('enrichers.noFlowsAvailable')}
                           </h3>
                           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                             {flowsSearchQuery
-                              ? 'Try adjusting your search terms or browse all available flows.'
-                              : 'Flows are custom automation sequences that combine multiple transforms and data sources.'}
+                              ? t('enrichers.noFlowsFoundHint')
+                              : t('enrichers.flowsEmptyDescription')}
                           </p>
                         </div>
                         {!flowsSearchQuery && (
                           <div className="space-y-4">
                             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                               <Zap className="h-3 w-3" />
-                              <span>Create your first flow to get started</span>
+                              <span>{t('enrichers.createFirstFlowHint')}</span>
                             </div>
                             <Link to="/dashboard/flows">
                               <Button className="gap-2">
                                 <PlusIcon className="h-4 w-4" />
-                                Create your first flow
+                                {t('enrichers.createFirstFlow')}
                               </Button>
                             </Link>
                           </div>
@@ -369,14 +375,14 @@ const LaunchEnricherOrFlowPanel = memo(
 
             <SheetFooter>
               <Button variant="outline" onClick={handleCloseModal} className="mr-2">
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 onClick={handleLaunchPanel}
                 disabled={!selectedEnricher}
                 className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary"
               >
-                Launch enricher
+                {t('enrichers.launchEnricher')}
               </Button>
             </SheetFooter>
           </SheetContent>

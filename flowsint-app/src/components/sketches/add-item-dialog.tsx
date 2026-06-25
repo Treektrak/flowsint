@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, ArrowRight, Download, Upload } from 'lucide-react'
@@ -21,6 +22,7 @@ import { useGraphSettingsStore } from '@/stores/graph-settings-store'
 import { useGraphControls } from '@/stores/graph-controls-store'
 
 export default function AddItemDialog() {
+  const { t } = useTranslation()
   const handleOpenFormModal = useGraphStore((state) => state.handleOpenFormModal)
   const currentNodeType = useGraphStore((state) => state.currentNodeType)
   const setCurrentNodeId = useGraphStore((state) => state.setCurrentNodeId)
@@ -68,7 +70,7 @@ export default function AddItemDialog() {
 
   const handleAddNode = async (data: any) => {
     if (!currentNodeType || !sketch_id) {
-      toast.error('Invalid node type or sketch ID.')
+      toast.error(t('dialogs.invalidNodeTypeOrSketch'))
       return
     }
 
@@ -130,12 +132,16 @@ export default function AddItemDialog() {
     setOpenMainDialog(false)
     setOpenFormDialog(false)
     // Show optimistic success message
-    toast(`New ${type.toLowerCase()} added to sketch.`, {
+    toast(t('dialogs.nodeAdded', { type: type.toLowerCase() }), {
       description: relatedNodeToAdd
-        ? `A new ${type.toLowerCase()} "${label}" was added to relation ${relatedNodeToAdd.nodeLabel}.`
-        : `A new ${type.toLowerCase()} "${label}" was added.`,
+        ? t('dialogs.nodeAddedToRelation', {
+            type: type.toLowerCase(),
+            label,
+            relation: relatedNodeToAdd.nodeLabel
+          })
+        : t('dialogs.nodeAddedDescription', { type: type.toLowerCase(), label }),
       action: {
-        label: 'Beautify layout',
+        label: t('dialogs.beautifyLayout'),
         onClick: () => regenerateLayout(currentLayoutType)
       }
     })
@@ -162,7 +168,7 @@ export default function AddItemDialog() {
       }
     } catch (error) {
       console.error(error)
-      toast.error('Failed to sync node with server. Please refresh.')
+      toast.error(t('dialogs.nodeSyncFailed'))
     }
     // finally {
     //   setTimeout(() => {
@@ -192,7 +198,7 @@ export default function AddItemDialog() {
       return (
         <div className="flex items-center justify-center h-32">
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">No action items available</p>
+            <p className="text-sm text-muted-foreground">{t('dialogs.noActionItems')}</p>
           </div>
         </div>
       )
@@ -236,10 +242,10 @@ export default function AddItemDialog() {
                 </Button>
               )}
               {relatedNodeToAdd
-                ? `Add a relation to `
+                ? `${t('dialogs.addRelationTo')} `
                 : currentParent
                   ? currentParent.label
-                  : 'Select an item to insert'}
+                  : t('dialogs.selectItemToInsert')}
               {relatedNodeToAdd && (
                 <span className="text-primary truncate max-w-[50%] text-ellipsis font-semibold ml-1">
                   {relatedNodeToAdd.nodeLabel}
@@ -254,16 +260,16 @@ export default function AddItemDialog() {
                 className="flex items-center gap-2 rounded"
               >
                 <Download className="h-4 w-4" />
-                Import entities
+                {t('dialogs.importEntities')}
               </Button>
             </div>
           </DialogTitle>
           <DialogDescription>
             {relatedNodeToAdd
-              ? 'Choose what type of relation to add to this node.'
+              ? t('dialogs.chooseRelationType')
               : currentParent
-                ? `Select a type of ${currentParent.label.toLowerCase()} to add`
-                : 'Choose an item to insert manually, or import data from a file.'}
+                ? t('dialogs.selectTypeToAdd', { type: currentParent.label.toLowerCase() })
+                : t('dialogs.chooseItemOrImport')}
           </DialogDescription>
 
           <div className="overflow-y-auto overflow-x-hidden pr-1 -mr-1 flex-grow @container">
@@ -288,7 +294,9 @@ export default function AddItemDialog() {
       <Dialog open={openFormDialog} onOpenChange={setOpenFormDialog}>
         <DialogContent className="max-h-[95vh] flex flex-col">
           <DialogTitle>
-            {currentNodeType && <>Add {currentNodeType.label.toLowerCase()}</>}
+            {currentNodeType && (
+              <>{t('dialogs.addNodeType', { type: currentNodeType.label.toLowerCase() })}</>
+            )}
           </DialogTitle>
           <DialogDescription>{currentNodeType?.description}</DialogDescription>
           {currentNodeType && (
@@ -312,6 +320,7 @@ interface ActionCardProps {
 }
 
 function ActionCard({ item, onSelect }: ActionCardProps) {
+  const { t } = useTranslation()
   const IconComponent = useIcon(item.icon, { nodeIcon: item.icon, nodeColor: item.color })
 
   return (
@@ -331,12 +340,12 @@ function ActionCard({ item, onSelect }: ActionCardProps) {
         {!item.children && <div className="text-sm mt-2 opacity-60">{item.description}</div>}
         {!item.children && (
           <Badge variant="outline" className="mt-2">
-            {item.fields.length} fields
+            {t('dialogs.fieldsCount', { count: item.fields.length })}
           </Badge>
         )}
         {item.disabled && (
           <Badge variant="outline" className="mt-2 absolute top-2 left-2">
-            Soon
+            {t('dialogs.soon')}
           </Badge>
         )}
         {item.children && (
@@ -345,7 +354,9 @@ function ActionCard({ item, onSelect }: ActionCardProps) {
           </div>
         )}
         {item.children && (
-          <div className="text-xs text-muted-foreground mt-1">{item.children.length} options</div>
+          <div className="text-xs text-muted-foreground mt-1">
+            {t('dialogs.optionsCount', { count: item.children.length })}
+          </div>
         )}
       </CardContent>
     </Card>

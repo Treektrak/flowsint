@@ -17,6 +17,7 @@ import { CopyButton } from '../copy'
 import { GraphNode } from '@/types'
 import { formatDistanceToNow } from 'date-fns'
 import { usePermissions } from '@/hooks/use-can'
+import { useTranslation } from 'react-i18next'
 
 export type RelationshipType = {
   source: GraphNode
@@ -42,6 +43,7 @@ const NodeItem = memo(function NodeItem({
   onSelectionChange,
   canEdit
 }: NodeItemProps) {
+  const { t } = useTranslation()
   const SourceIcon = useIcon(node.nodeType, {
     nodeColor: node.nodeColor,
     nodeIcon: node.nodeIcon,
@@ -63,7 +65,7 @@ const NodeItem = memo(function NodeItem({
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true })
     } catch {
-      return 'Unknown'
+      return t('panels.unknown')
     }
   }, [])
 
@@ -117,7 +119,7 @@ const NodeItem = memo(function NodeItem({
         {/* Type */}
         <div>
           <Badge variant="outline" className="text-xs">
-            {node.nodeType || 'Unknown'}
+            {node.nodeType || t('panels.unknown')}
           </Badge>
         </div>
 
@@ -127,7 +129,7 @@ const NodeItem = memo(function NodeItem({
           <span className="truncate">
             {node.nodeMetadata?.created_at
               ? formatCreatedAt(node.nodeMetadata?.created_at)
-              : 'Unknown'}
+              : t('panels.unknown')}
           </span>
         </div>
 
@@ -144,6 +146,7 @@ type NodesTableProps = {
   nodes: GraphNode[]
 }
 export default function NodesTable({ nodes }: NodesTableProps) {
+  const { t } = useTranslation()
   const { canEdit } = usePermissions()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
@@ -237,8 +240,8 @@ export default function NodesTable({ nodes }: NodesTableProps) {
         <div className="text-center space-y-4">
           <Link className="mx-auto h-12 w-12 text-muted-foreground" />
           <div>
-            <h3 className="text-lg font-semibold">No nodes found</h3>
-            <p className="text-muted-foreground">This sketch doesn't have any nodes yet.</p>
+            <h3 className="text-lg font-semibold">{t('panels.noNodesFound')}</h3>
+            <p className="text-muted-foreground">{t('panels.noNodesYet')}</p>
           </div>
         </div>
       </div>
@@ -250,14 +253,14 @@ export default function NodesTable({ nodes }: NodesTableProps) {
       {/* Header with stats */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight">Entities</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t('panels.entities')}</h2>
           <p className="text-muted-foreground">
-            {filteredNodes.length} of {nodes.length} nodes
+            {t('panels.nodesCount', { filtered: filteredNodes.length, total: nodes.length })}
           </p>
         </div>
         <Badge variant="secondary" className="flex items-center gap-2">
           <Users className="h-4 w-4" />
-          {nodes.length} total
+          {t('panels.totalCount', { count: nodes.length })}
         </Badge>
       </div>
 
@@ -266,7 +269,7 @@ export default function NodesTable({ nodes }: NodesTableProps) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search nodes, nodes, or types..."
+            placeholder={t('panels.searchNodesPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -275,10 +278,10 @@ export default function NodesTable({ nodes }: NodesTableProps) {
         <Select value={selectedType} onValueChange={setSelectedType}>
           <SelectTrigger className="w-48">
             <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-            <SelectValue placeholder="Filter by type" />
+            <SelectValue placeholder={t('panels.filterByType')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
+            <SelectItem value="all">{t('panels.allTypes')}</SelectItem>
             {nodeTypes.map((type) => (
               <SelectItem key={type} value={type}>
                 <span className="capitalize">{type}</span>
@@ -306,10 +309,10 @@ export default function NodesTable({ nodes }: NodesTableProps) {
           </div>
         )}
         <div></div> {/* Icon */}
-        <div className="text-left">Label</div>
-        <div>Data</div>
-        <div>Type</div>
-        <div>Created</div>
+        <div className="text-left">{t('panels.label')}</div>
+        <div>{t('panels.data')}</div>
+        <div>{t('panels.type')}</div>
+        <div>{t('panels.created')}</div>
         <div></div> {/* Actions */}
       </div>
 
