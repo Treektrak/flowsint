@@ -14,14 +14,19 @@ from typing import Any, Dict, List, Optional, Tuple
 # Путь к вендоренному SpiderFoot внутри образа
 SPIDERFOOT_HOME = os.environ.get("SPIDERFOOT_HOME", "/app/flowsint-api/spiderfoot")
 
-# Пресеты модулей под сценарии (быстрый пассивный набор по умолчанию)
+# Пресеты модулей под сценарии.
+# fast — быстрый набор без брутфорса/медленных внешних фидов (для синхронного API).
+# passive — расширенный пассивный сбор (дольше, для фоновых сканов).
 PRESETS = {
+    "fast": [
+        "sfp_dnsresolve", "sfp_whois", "sfp_sslcert", "sfp_ssltools",
+        "sfp_iptoasn", "sfp_dnsraw", "sfp_dnstext",
+    ],
     "passive": [
-        "sfp_dnsresolve", "sfp_whois", "sfp_dnsbrute", "sfp_ssltools",
-        "sfp_sslcert", "sfp_ripe", "sfp_arin", "sfp_subdomain_takeover",
-        "sfp_crt", "sfp_threatcrowd", "sfp_robtex", "sfp_dnsraw",
-        "sfp_email", "sfp_names", "sfp_company", "sfp_socialprofiles",
-        "sfp_iptoasn", "sfp_ipinfo", "sfp_phone",
+        "sfp_dnsresolve", "sfp_whois", "sfp_sslcert", "sfp_ssltools",
+        "sfp_iptoasn", "sfp_dnsraw", "sfp_dnstext", "sfp_crt",
+        "sfp_ripe", "sfp_arin", "sfp_email", "sfp_names", "sfp_company",
+        "sfp_socialprofiles", "sfp_ipinfo", "sfp_phone", "sfp_subdomain_takeover",
     ],
 }
 
@@ -82,7 +87,7 @@ def list_modules() -> List[str]:
 def run_scan(
     target: str,
     modules: Optional[List[str]] = None,
-    preset: str = "passive",
+    preset: str = "fast",
     timeout: int = 600,
 ) -> List[Dict[str, Any]]:
     """Запускает скан встроенного SpiderFoot через CLI (sf.py -o json) и

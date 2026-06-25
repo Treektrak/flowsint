@@ -326,7 +326,7 @@ def spiderfoot_modules(current_user: Profile = Depends(get_current_user)):
 
 class SpiderfootScanRequest(BaseModel):
     target: str
-    preset: Optional[str] = "passive"
+    preset: Optional[str] = "fast"
     modules: Optional[List[str]] = None
 
 
@@ -342,7 +342,7 @@ async def spiderfoot_scan(
     if not target:
         raise HTTPException(status_code=400, detail="Не указана цель скана.")
     try:
-        events = sf_run_scan(target, modules=body.modules, preset=body.preset or "passive")
+        events = sf_run_scan(target, modules=body.modules, preset=body.preset or "fast")
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=f"Ошибка SpiderFoot: {exc}")
 
