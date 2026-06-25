@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.api.i18n_ru import translate_enrichers
 
 load_all_enrichers()
 
@@ -35,8 +36,8 @@ def get_enrichers(
 ):
     """Get all enrichers, optionally filtered by category."""
     enricher_service = create_enricher_service(db)
-    return enricher_service.get_all_enrichers(
-        category, current_user.id, ENRICHER_REGISTRY
+    return translate_enrichers(
+        enricher_service.get_all_enrichers(category, current_user.id, ENRICHER_REGISTRY)
     )
 
 
