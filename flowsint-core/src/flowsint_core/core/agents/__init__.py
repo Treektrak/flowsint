@@ -1,6 +1,7 @@
 from .experts import EXPERTS, Expert, get_expert
 from .graph_context import serialize_graph, build_user_prompt
 from .orchestrator import run_panel
+from .pdf_report import generate_report_pdf
 
 __all__ = [
     "EXPERTS",
@@ -9,4 +10,5 @@ __all__ = [
     "serialize_graph",
     "build_user_prompt",
     "run_panel",
+    "generate_report_pdf",
 ]
