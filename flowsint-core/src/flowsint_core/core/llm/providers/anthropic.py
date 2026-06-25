@@ -8,7 +8,7 @@ class AnthropicProvider:
         self,
         api_key: str,
         model: str = "claude-sonnet-4-6",
-        max_tokens: int = 4096,
+        max_tokens: int = 8192,
     ):
         from anthropic import AsyncAnthropic
 

@@ -67,12 +67,17 @@ def _build_pdf(data: Dict[str, Any], font_dir: str):
     nodes = data.get("graph_nodes") or []
     rels = data.get("graph_rels") or []
 
-    # Общая схема расследования
+    # Общая схема расследования + статистика
     if nodes:
         _section_header(pdf, "Схема расследования")
         _mcell(pdf, 5.5, "Полный граф связей расследования. Цвет узла соответствует типу сущности.", size=9, style="I", color=_MUTED, markdown=False)
         pdf.ln(2)
-        _draw_graph(pdf, nodes, rels, height=120)
+        _draw_graph(pdf, nodes, rels, height=118)
+        # диаграмма распределения сущностей по типам
+        pdf.ln(2)
+        _mcell(pdf, 6.5, "Распределение сущностей по типам", size=11.5, style="B", color=_PRIMARY, markdown=False)
+        pdf.ln(1)
+        _draw_entity_chart(pdf, nodes)
 
     for expert in data.get("experts", []):
         analysis = expert.get("analysis")
@@ -267,6 +272,56 @@ def _draw_graph(pdf, nodes, rels, highlight=None, height=105):
     pdf.set_y(y0 + height + 4)
 
 
+_TYPE_RU_SHORT = {
+    "domain": "Домены", "website": "Сайты", "ip": "IP-адреса", "asn": "ASN",
+    "cidr": "CIDR", "dnsrecord": "DNS-записи", "sslcertificate": "SSL-сертификаты",
+    "email": "Email", "phone": "Телефоны", "individual": "Личности",
+    "username": "Имена польз.", "socialaccount": "Соцаккаунты",
+    "organization": "Организации", "malware": "ВПО", "weapon": "Оружие",
+    "cryptowallet": "Криптокошельки", "cryptowallettransaction": "Криптотранзакции",
+    "bankaccount": "Банк. счета", "creditcard": "Карты", "location": "Локации",
+    "device": "Устройства", "document": "Документы", "leak": "Утечки",
+    "phrase": "Фразы", "message": "Сообщения", "port": "Порты",
+}
+
+
+def _draw_entity_chart(pdf, nodes):
+    """Горизонтальная столбчатая диаграмма распределения сущностей по типам."""
+    from collections import Counter
+
+    counts = Counter((n.get("nodeType") or "?").lower() for n in nodes)
+    if not counts:
+        return
+    items = counts.most_common()
+    maxv = max(c for _, c in items)
+    x0 = pdf.l_margin
+    label_w = 36
+    bar_max = pdf.epw - label_w - 14
+    bar_h = 5.0
+    gap = 2.2
+    for ntype, cnt in items:
+        if pdf.get_y() + bar_h > pdf.h - 22:
+            pdf.add_page()
+        y = pdf.get_y()
+        # подпись типа
+        pdf.set_font("DejaVu", "", 8.5)
+        pdf.set_text_color(*_DARK)
+        pdf.set_xy(x0, y)
+        pdf.cell(label_w, bar_h, _TYPE_RU_SHORT.get(ntype, ntype)[:18], align="L")
+        # бар
+        color = _TYPE_COLORS.get(ntype, _DEFAULT_NODE_COLOR)
+        w = max(1.5, bar_max * cnt / maxv)
+        pdf.set_fill_color(*color)
+        pdf.rect(x0 + label_w, y + 0.6, w, bar_h - 1.2, style="F")
+        # число
+        pdf.set_font("DejaVu", "B", 8.5)
+        pdf.set_text_color(*_DARK)
+        pdf.set_xy(x0 + label_w + w + 1.5, y)
+        pdf.cell(10, bar_h, str(cnt), align="L")
+        pdf.set_y(y + bar_h + gap)
+    pdf.ln(2)
+
+
 def _section_header(pdf, title: str):
     pdf.add_page()
     pdf.set_fill_color(*_PRIMARY)
@@ -280,11 +335,78 @@ def _section_header(pdf, title: str):
 _BULLET = "•  "
 
 
+def _is_table_row(line: str) -> bool:
+    return line.count("|") >= 2
+
+
+def _is_table_separator(line: str) -> bool:
+    return bool(re.match(r"^\s*\|?[\s:|\-]+\|?\s*$", line)) and "-" in line and "|" in line
+
+
+def _parse_table_row(line: str):
+    cells = line.strip().strip("|").split("|")
+    return [c.strip() for c in cells]
+
+
+def _render_table(pdf, rows):
+    """Рисует распарсенную markdown-таблицу через fpdf2 table API."""
+    if not rows:
+        return
+    header = rows[0]
+    body = rows[1:]
+    ncols = max(len(r) for r in rows)
+    pdf.ln(1)
+    pdf.set_font("DejaVu", "", 8.5)
+    pdf.set_draw_color(210, 214, 222)
+    try:
+        with pdf.table(
+            borders_layout="MINIMAL",
+            cell_fill_color=(244, 247, 250),
+            cell_fill_mode="ROWS",
+            line_height=5.2,
+            text_align="LEFT",
+            width=pdf.epw,
+        ) as table:
+            hr = table.row()
+            for c in range(ncols):
+                pdf.set_font("DejaVu", "B", 8.5)
+                pdf.set_text_color(*_PRIMARY)
+                hr.cell(_strip_emoji(header[c]) if c < len(header) else "")
+            for r in body:
+                row = table.row()
+                for c in range(ncols):
+                    pdf.set_font("DejaVu", "", 8.5)
+                    pdf.set_text_color(*_DARK)
+                    txt = _break_long_tokens(_strip_emoji(r[c])) if c < len(r) else ""
+                    row.cell(txt)
+    except Exception:
+        # запасной вариант: текстом
+        for r in rows:
+            _mcell(pdf, 5.5, " | ".join(_strip_emoji(x) for x in r), size=8.5)
+    pdf.set_text_color(*_DARK)
+    pdf.ln(2)
+
+
 def _render_markdown(pdf, md: str):
-    for raw in md.split("\n"):
+    lines = md.split("\n")
+    i = 0
+    n = len(lines)
+    while i < n:
+        raw = lines[i]
         stripped = raw.strip()
+        # таблица: строка с | и следующая — разделитель
+        if _is_table_row(raw) and i + 1 < n and _is_table_separator(lines[i + 1]):
+            rows = [_parse_table_row(raw)]
+            j = i + 2
+            while j < n and _is_table_row(lines[j]) and not _is_table_separator(lines[j]):
+                rows.append(_parse_table_row(lines[j]))
+                j += 1
+            _render_table(pdf, rows)
+            i = j
+            continue
         if not stripped:
             pdf.ln(2)
+            i += 1
             continue
         # горизонтальный разделитель
         if re.match(r"^([-*_])\1{2,}$", stripped):
@@ -293,6 +415,7 @@ def _render_markdown(pdf, md: str):
             pdf.set_line_width(0.2)
             pdf.line(pdf.l_margin, pdf.get_y(), pdf.w - pdf.r_margin, pdf.get_y())
             pdf.ln(3)
+            i += 1
             continue
         # заголовки
         m = re.match(r"^(#{1,4})\s+(.*)$", stripped)
@@ -302,19 +425,23 @@ def _render_markdown(pdf, md: str):
             pdf.ln(2)
             _mcell(pdf, 7, _strip_emoji(m.group(2)), size=sizes.get(level, 11), style="B", color=_PRIMARY)
             pdf.ln(1)
+            i += 1
             continue
         # маркированный список
         lm = re.match(r"^[-*+]\s+(.*)$", stripped)
         if lm:
             _mcell(pdf, 6, _BULLET + _strip_emoji(lm.group(1)), size=10.5, indent=4)
+            i += 1
             continue
         # нумерованный список
         nm = re.match(r"^(\d+)\.\s+(.*)$", stripped)
         if nm:
             _mcell(pdf, 6, f"{nm.group(1)}.  " + _strip_emoji(nm.group(2)), size=10.5, indent=4)
+            i += 1
             continue
         # обычный абзац
         _mcell(pdf, 6, _strip_emoji(stripped), size=10.5)
+        i += 1
 
 
 def generate_report_pdf(
