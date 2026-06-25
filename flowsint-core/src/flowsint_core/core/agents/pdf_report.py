@@ -67,17 +67,31 @@ def _build_pdf(data: Dict[str, Any], font_dir: str):
     nodes = data.get("graph_nodes") or []
     rels = data.get("graph_rels") or []
 
-    # Общая схема расследования + статистика
+    # Сводка-дашборд: KPI + распределение + таймлайн
     if nodes:
+        _section_header(pdf, "Сводка")
+        _draw_dashboard(pdf, data)
+        pdf.ln(3)
+        _mcell(pdf, 6.5, "Распределение сущностей по типам", size=11.5, style="B", color=_PRIMARY, markdown=False)
+        pdf.ln(1)
+        _draw_entity_chart(pdf, nodes)
+        # Хронология событий
+        pdf.ln(3)
+        _mcell(pdf, 6.5, "Хронология событий", size=11.5, style="B", color=_PRIMARY, markdown=False)
+        pdf.ln(1)
+        if not _draw_timeline(pdf, nodes):
+            _mcell(pdf, 5.5, "Недостаточно датированных событий для построения шкалы.", size=9, style="I", color=_MUTED, markdown=False)
+
+        # Схема расследования
         _section_header(pdf, "Схема расследования")
         _mcell(pdf, 5.5, "Полный граф связей расследования. Цвет узла соответствует типу сущности.", size=9, style="I", color=_MUTED, markdown=False)
         pdf.ln(2)
         _draw_graph(pdf, nodes, rels, height=118)
-        # диаграмма распределения сущностей по типам
-        pdf.ln(2)
-        _mcell(pdf, 6.5, "Распределение сущностей по типам", size=11.5, style="B", color=_PRIMARY, markdown=False)
+        # Матрица связей (heatmap)
+        pdf.ln(3)
+        _mcell(pdf, 6.5, "Матрица связей (кто с кем связан)", size=11.5, style="B", color=_PRIMARY, markdown=False)
         pdf.ln(1)
-        _draw_entity_chart(pdf, nodes)
+        _draw_adjacency_matrix(pdf, nodes, rels)
 
     for expert in data.get("experts", []):
         analysis = expert.get("analysis")
@@ -283,6 +297,166 @@ _TYPE_RU_SHORT = {
     "device": "Устройства", "document": "Документы", "leak": "Утечки",
     "phrase": "Фразы", "message": "Сообщения", "port": "Порты",
 }
+
+
+def _draw_dashboard(pdf, data):
+    """Ряд карточек с крупными показателями (KPI)."""
+    nodes = data.get("graph_nodes") or []
+    rels = data.get("graph_rels") or []
+    experts = [e for e in data.get("experts", []) if e.get("analysis")]
+    key_set = set()
+    for e in experts:
+        for k in e.get("key_entities") or []:
+            key_set.add(k.lower())
+    ntypes = len({(n.get("nodeType") or "").lower() for n in nodes})
+
+    cards = [
+        (str(len(nodes)), "сущностей"),
+        (str(len(rels)), "связей"),
+        (str(ntypes), "типов"),
+        (str(len(experts)), "экспертиз"),
+        (str(len(key_set)), "ключевых находок"),
+    ]
+    n = len(cards)
+    gap = 4
+    cw = (pdf.epw - gap * (n - 1)) / n
+    ch = 24
+    x = pdf.l_margin
+    y = pdf.get_y()
+    for value, label in cards:
+        pdf.set_fill_color(245, 248, 251)
+        pdf.set_draw_color(225, 230, 236)
+        pdf.rect(x, y, cw, ch, style="DF")
+        pdf.set_xy(x, y + 3)
+        pdf.set_font("DejaVu", "B", 19)
+        pdf.set_text_color(*_PRIMARY)
+        pdf.cell(cw, 11, value, align="C")
+        pdf.set_xy(x, y + 15)
+        pdf.set_font("DejaVu", "", 7.5)
+        pdf.set_text_color(*_MUTED)
+        pdf.cell(cw, 5, label, align="C")
+        x += cw + gap
+    pdf.set_y(y + ch + 5)
+    pdf.set_text_color(*_DARK)
+
+
+def _draw_adjacency_matrix(pdf, nodes, rels):
+    """Матрица связей (heatmap кто-с-кем). Берёт до 16 самых связанных узлов."""
+    if not nodes or not rels:
+        return
+    # степень связности
+    deg = {n.get("id"): 0 for n in nodes}
+    pair = set()
+    for r in rels:
+        s, t = r.get("source"), r.get("target")
+        if s in deg and t in deg:
+            deg[s] += 1
+            deg[t] += 1
+            pair.add(frozenset((s, t)))
+    top = sorted(nodes, key=lambda n: deg.get(n.get("id"), 0), reverse=True)
+    top = [n for n in top if deg.get(n.get("id"), 0) > 0][:16]
+    if len(top) < 2:
+        return
+    ids = [n.get("id") for n in top]
+    labels = [_strip_emoji(n.get("nodeLabel") or "")[:14] for n in top]
+    k = len(top)
+
+    # геометрия
+    label_col = 34
+    avail = pdf.epw - label_col
+    cell = min(7.0, avail / k)
+    grid_w = cell * k
+    x0 = pdf.l_margin + label_col
+    if pdf.get_y() + grid_w + label_col > pdf.h - 22:
+        pdf.add_page()
+    y0 = pdf.get_y() + 2
+
+    # заголовки столбцов (вертикально — номера), строки — подписи
+    pdf.set_font("DejaVu", "", 6)
+    pdf.set_text_color(*_MUTED)
+    for j in range(k):
+        pdf.set_xy(x0 + j * cell, y0 - 4)
+        pdf.cell(cell, 3, str(j + 1), align="C")
+
+    for i in range(k):
+        # подпись строки: "N. label"
+        pdf.set_xy(pdf.l_margin, y0 + i * cell + cell / 2 - 1.5)
+        pdf.set_font("DejaVu", "", 6)
+        pdf.set_text_color(*_DARK)
+        pdf.cell(label_col - 1, 3, f"{i + 1}. {labels[i]}", align="L")
+        for j in range(k):
+            x = x0 + j * cell
+            y = y0 + i * cell
+            if i == j:
+                pdf.set_fill_color(225, 228, 234)
+            elif frozenset((ids[i], ids[j])) in pair:
+                pdf.set_fill_color(*_ACCENT)
+            else:
+                pdf.set_fill_color(247, 249, 251)
+            pdf.set_draw_color(228, 231, 237)
+            pdf.rect(x, y, cell, cell, style="DF")
+    pdf.set_y(y0 + k * cell + 4)
+    pdf.set_text_color(*_DARK)
+
+
+_DATE_FIELDS = (
+    "date", "timestamp", "created_at", "date_creation", "valid_from",
+    "valid_until", "first_seen", "last_seen", "birth_date", "death_date",
+)
+_DATE_RE = re.compile(r"(\d{4})[-./](\d{1,2})[-./](\d{1,2})|(\d{1,2})[.](\d{1,2})[.](\d{4})")
+
+
+def _extract_date(value):
+    if not isinstance(value, str):
+        return None
+    m = _DATE_RE.search(value)
+    if not m:
+        return None
+    if m.group(1):
+        return f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}"
+    return f"{m.group(6)}-{int(m.group(5)):02d}-{int(m.group(4)):02d}"
+
+
+def _draw_timeline(pdf, nodes):
+    """Графический таймлайн событий по датам, найденным в свойствах узлов."""
+    events = []
+    for n in nodes:
+        props = n.get("nodeProperties") or {}
+        for f in _DATE_FIELDS:
+            d = _extract_date(props.get(f))
+            if d:
+                events.append((d, _strip_emoji(n.get("nodeLabel") or ""), f))
+                break
+    if len(events) < 2:
+        return False
+    events = sorted(set(events))
+    if pdf.get_y() + 18 + 6 * len(events) > pdf.h - 22:
+        pdf.add_page()
+    x0 = pdf.l_margin + 4
+    x1 = pdf.w - pdf.r_margin - 4
+    y = pdf.get_y() + 6
+    # ось
+    pdf.set_draw_color(*_PRIMARY)
+    pdf.set_line_width(0.4)
+    pdf.line(x0, y, x1, y)
+    step = (x1 - x0) / max(len(events) - 1, 1)
+    for idx, (d, label, _f) in enumerate(events):
+        x = x0 + idx * step
+        pdf.set_fill_color(*_ACCENT)
+        pdf.ellipse(x - 1.4, y - 1.4, 2.8, 2.8, style="F")
+        # дата над осью
+        pdf.set_xy(x - 14, y - 6)
+        pdf.set_font("DejaVu", "B", 6.5)
+        pdf.set_text_color(*_PRIMARY)
+        pdf.cell(28, 3, d, align="C")
+        # событие под осью (чередуем отступ)
+        pdf.set_xy(x - 18, y + 2 + (idx % 2) * 4)
+        pdf.set_font("DejaVu", "", 6)
+        pdf.set_text_color(*_DARK)
+        pdf.multi_cell(36, 3, label[:26], align="C", new_x="LMARGIN", new_y="TOP")
+    pdf.set_y(y + 16)
+    pdf.set_text_color(*_DARK)
+    return True
 
 
 def _draw_entity_chart(pdf, nodes):
