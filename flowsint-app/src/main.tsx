@@ -37,7 +37,7 @@ if (!rootElement.innerHTML) {
 
   root.render(
     <React.StrictMode>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="light" storageKey="traceon-ui-theme">
         <TanStackQueryProvider>
           <RouterProvider router={router} />
         </TanStackQueryProvider>

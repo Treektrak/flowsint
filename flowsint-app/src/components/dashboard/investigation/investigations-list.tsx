@@ -135,7 +135,7 @@ export function InvestigationsList({
             <Link
               to="/dashboard/investigations/$investigationId"
               params={{ investigationId: inv.id }}
-              className="block p-4 border border-border rounded-lg hover:border-muted-foreground/30 transition-colors group"
+              className="block p-4 border border-[#b3cce6] bg-[#eef4fb] rounded-lg hover:border-[#1d5288] hover:bg-[#d9e6f3] hover:shadow-sm transition-colors group"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
