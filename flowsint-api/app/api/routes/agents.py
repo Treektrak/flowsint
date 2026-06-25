@@ -9,6 +9,7 @@ from fastapi.responses import Response
 from flowsint_core.core.agents import (
     EXPERTS,
     build_user_prompt,
+    generate_report_html_pdf,
     generate_report_pdf,
     run_panel,
     serialize_graph,
@@ -176,7 +177,11 @@ async def report_sketch(
     result = await _analyze(sketch_id, body, db, current_user.id)
     generated_at = datetime.now().strftime("%d.%m.%Y %H:%M")
     try:
-        pdf_bytes = generate_report_pdf(result, _FONT_DIR, generated_at=generated_at)
+        # Профессиональная HTML/CSS-вёрстка (WeasyPrint). При сбое — запасной fpdf2.
+        try:
+            pdf_bytes = generate_report_html_pdf(result, generated_at=generated_at)
+        except Exception:
+            pdf_bytes = generate_report_pdf(result, _FONT_DIR, generated_at=generated_at)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=f"Не удалось сформировать PDF: {exc}")
 

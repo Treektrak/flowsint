@@ -8,7 +8,7 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 
 from ..llm import ChatMessage, LLMProvider, MessageRole
-from .experts import EXPERTS, SYNTHESIS_PROMPT, Expert
+from .experts import EXPERTS, LETTERS_PROMPT, SYNTHESIS_PROMPT, Expert
 
 
 def _parse_tail(analysis: str) -> Tuple[str, List[str], Optional[str]]:
@@ -88,24 +88,40 @@ async def _synthesize(
         return f"(Не удалось выполнить синтез: {exc})"
 
 
+async def _generate_letters(provider: LLMProvider, user_prompt: str) -> Optional[str]:
+    """Генерирует готовые шаблоны официальных писем-запросов в органы."""
+    messages = [
+        ChatMessage(role=MessageRole.SYSTEM, content=LETTERS_PROMPT),
+        ChatMessage(role=MessageRole.USER, content=user_prompt),
+    ]
+    try:
+        return await provider.complete(messages)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 async def run_panel(
     provider: LLMProvider,
     user_prompt: str,
     expert_keys: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
-    """Запускает панель экспертов и синтез. Возвращает заключения и сводку."""
+    """Запускает панель экспертов, синтез и генерацию писем-запросов."""
     selected: List[Expert] = (
         [e for e in EXPERTS if e.key in expert_keys] if expert_keys else list(EXPERTS)
     )
 
-    expert_results = await asyncio.gather(
-        *[_run_expert(provider, e, user_prompt) for e in selected]
+    expert_results = list(
+        await asyncio.gather(*[_run_expert(provider, e, user_prompt) for e in selected])
     )
-    expert_results = list(expert_results)
 
-    synthesis = await _synthesize(provider, expert_results)
+    # синтез и письма-запросы параллельно
+    synthesis, letters = await asyncio.gather(
+        _synthesize(provider, expert_results),
+        _generate_letters(provider, user_prompt),
+    )
 
     return {
         "experts": expert_results,
         "synthesis": synthesis,
+        "letters": letters,
     }
