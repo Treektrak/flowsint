@@ -22,6 +22,17 @@ def _strip_emoji(text: str) -> str:
     ).strip()
 
 
+def _break_long_tokens(text: str, max_len: int = 42) -> str:
+    """Вставляет пробелы в сверхдлинные «слова» (крипто-адреса, хэши),
+    чтобы fpdf2 мог перенести строку (иначе ошибка переноса)."""
+    def fix(word: str) -> str:
+        if len(word) <= max_len:
+            return word
+        return " ".join(word[i : i + max_len] for i in range(0, len(word), max_len))
+
+    return " ".join(fix(w) for w in text.split(" "))
+
+
 def _mcell(pdf, h, text, size=10.5, style="", color=_DARK, align="L", indent=0.0, markdown=True):
     """Безопасная обёртка multi_cell: всегда сбрасывает X к левому полю."""
     pdf.set_font("DejaVu", style, size)
@@ -29,8 +40,8 @@ def _mcell(pdf, h, text, size=10.5, style="", color=_DARK, align="L", indent=0.0
     pdf.set_x(pdf.l_margin + indent)
     width = pdf.epw - indent
     pdf.multi_cell(
-        width, h, text, align=align, markdown=markdown,
-        new_x="LMARGIN", new_y="NEXT",
+        width, h, _break_long_tokens(text), align=align, markdown=markdown,
+        new_x="LMARGIN", new_y="NEXT", wrapmode="CHAR",
     )
 
 
