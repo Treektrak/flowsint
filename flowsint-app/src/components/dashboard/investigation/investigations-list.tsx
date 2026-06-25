@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { Investigation } from '@/types'
 import { formatDistanceToNow } from 'date-fns'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface InvestigationsListProps {
   investigations: Investigation[]
@@ -24,6 +25,7 @@ export function InvestigationsList({
   activeCasesCount,
   search
 }: InvestigationsListProps) {
+  const { t } = useTranslation()
   const filteredInvestigations = investigations.filter((inv) => {
     if (filter === 'all') return inv.name.toLowerCase().includes(search.toLowerCase())
     return inv.status === filter && inv.name.toLowerCase().includes(search.toLowerCase())
@@ -31,11 +33,11 @@ export function InvestigationsList({
 
   const filters = useMemo(
     () => [
-      { label: 'All', value: 'all', count: casesCount },
-      { label: 'Active', value: 'active', count: activeCasesCount },
-      { label: 'Closed', value: 'closed', count: casesCount - activeCasesCount }
+      { label: t('common.all'), value: 'all', count: casesCount },
+      { label: t('common.active'), value: 'active', count: activeCasesCount },
+      { label: t('common.closed'), value: 'closed', count: casesCount - activeCasesCount }
     ],
-    [casesCount, activeCasesCount]
+    [casesCount, activeCasesCount, t]
   )
 
   return (
