@@ -125,7 +125,8 @@
     "aiReport": "🧠 ИИ-отчёт (PDF)",
     "reportGenerating": "Готовлю ИИ-отчёт… (~1 мин)",
     "reportReady": "Отчёт готов: {{filename}}",
-    "reportFailed": "Не удалось сформировать отчёт: {{error}}"
+    "reportFailed": "Не удалось сформировать отчёт: {{error}}",
+    "reportWith": "↳ через {{model}}"
   },
   "dialogs": {
     "newInvestigation": "Новое расследование",

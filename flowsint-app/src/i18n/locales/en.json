@@ -125,7 +125,8 @@
     "aiReport": "🧠 AI report (PDF)",
     "reportGenerating": "Generating AI report… (~1 min)",
     "reportReady": "Report ready: {{filename}}",
-    "reportFailed": "Failed to generate report: {{error}}"
+    "reportFailed": "Failed to generate report: {{error}}",
+    "reportWith": "↳ with {{model}}"
   },
   "dialogs": {
     "newInvestigation": "New investigation",

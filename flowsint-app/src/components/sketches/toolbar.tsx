@@ -20,7 +20,7 @@ import {
   SquareDashed,
   Sparkles
 } from 'lucide-react'
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import Filters from './filters/filters'
@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { sketchService } from '@/api/sketch-service'
-import { downloadAgentReport } from '@/api/agent-service'
+import { downloadAgentReport, listModels, type ProviderModels } from '@/api/agent-service'
 import { useParams } from '@tanstack/react-router'
 import { exportToPNG } from './graph/utils/export-to-png'
 import { PathFinder } from './graph/actions/path-finder'
@@ -229,24 +229,34 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
   )
 
   const [isReporting, setIsReporting] = useState(false)
-  const handleReport = useCallback(async () => {
-    if (!sketchId || isReporting) return
-    setIsReporting(true)
-    const pending = toast.loading(t('graphToolbar.reportGenerating'))
-    try {
-      const filename = await downloadAgentReport(sketchId, '')
-      toast.success(t('graphToolbar.reportReady', { filename }), { id: pending })
-    } catch (error) {
-      toast.error(
-        t('graphToolbar.reportFailed', {
-          error: error instanceof Error ? error.message : t('graphToolbar.unknownError')
-        }),
-        { id: pending }
-      )
-    } finally {
-      setIsReporting(false)
-    }
-  }, [sketchId, isReporting, t])
+  const [providers, setProviders] = useState<ProviderModels[]>([])
+  useEffect(() => {
+    listModels()
+      .then((m) => setProviders(m.filter((p) => p.has_key)))
+      .catch(() => setProviders([]))
+  }, [])
+
+  const handleReport = useCallback(
+    async (provider?: string, model?: string) => {
+      if (!sketchId || isReporting) return
+      setIsReporting(true)
+      const pending = toast.loading(t('graphToolbar.reportGenerating'))
+      try {
+        const filename = await downloadAgentReport(sketchId, '', { provider, model })
+        toast.success(t('graphToolbar.reportReady', { filename }), { id: pending })
+      } catch (error) {
+        toast.error(
+          t('graphToolbar.reportFailed', {
+            error: error instanceof Error ? error.message : t('graphToolbar.unknownError')
+          }),
+          { id: pending }
+        )
+      } finally {
+        setIsReporting(false)
+      }
+    },
+    [sketchId, isReporting, t]
+  )
 
   const areExactlyTwoSelected = selectedNodes.length === 2
   const areMergeable =
@@ -426,10 +436,20 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
             <DropdownMenuItem onClick={() => handleExport('png')}>
               {t('graphToolbar.exportAsPng')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleReport} disabled={isReporting}>
+            <DropdownMenuItem onClick={() => handleReport()} disabled={isReporting}>
               <Sparkles className="h-4 w-4 mr-2 opacity-70" />
               {isReporting ? t('graphToolbar.reportGenerating') : t('graphToolbar.aiReport')}
             </DropdownMenuItem>
+            {providers.map((p) => (
+              <DropdownMenuItem
+                key={p.provider}
+                disabled={isReporting}
+                onClick={() => handleReport(p.provider, p.models[0])}
+                className="pl-8 text-xs text-muted-foreground"
+              >
+                {t('graphToolbar.reportWith', { model: `${p.provider} · ${p.models[0]}` })}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
         <ToolbarButton

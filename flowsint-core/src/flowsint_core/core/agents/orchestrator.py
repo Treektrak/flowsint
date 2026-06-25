@@ -4,10 +4,34 @@
 затем сводит их заключения синтез-агентом в единое резюме.
 """
 import asyncio
-from typing import Any, Dict, List, Optional
+import re
+from typing import Any, Dict, List, Optional, Tuple
 
 from ..llm import ChatMessage, LLMProvider, MessageRole
 from .experts import EXPERTS, SYNTHESIS_PROMPT, Expert
+
+
+def _parse_tail(analysis: str) -> Tuple[str, List[str], Optional[str]]:
+    """Извлекает из ответа эксперта строки «КЛЮЧЕВЫЕ СУЩНОСТИ:» и «ВЫВОД:»,
+    возвращает (очищенный_текст, список_сущностей, вывод)."""
+    key_entities: List[str] = []
+    conclusion: Optional[str] = None
+
+    m_ent = re.search(r"^\s*КЛЮЧЕВЫЕ\s+СУЩНОСТИ\s*:\s*(.+)$", analysis, re.MULTILINE | re.IGNORECASE)
+    if m_ent:
+        raw = m_ent.group(1).strip()
+        key_entities = [e.strip(" •*-`«»\"'") for e in raw.split(",") if e.strip()]
+
+    m_con = re.search(r"^\s*ВЫВОД\s*:\s*(.+)$", analysis, re.MULTILINE | re.IGNORECASE)
+    if m_con:
+        conclusion = m_con.group(1).strip()
+
+    # убираем служебные строки из основного текста
+    cleaned = re.sub(
+        r"^\s*(КЛЮЧЕВЫЕ\s+СУЩНОСТИ|ВЫВОД)\s*:.*$", "", analysis,
+        flags=re.MULTILINE | re.IGNORECASE,
+    ).rstrip()
+    return cleaned, key_entities, conclusion
 
 
 async def _run_expert(
@@ -18,12 +42,15 @@ async def _run_expert(
         ChatMessage(role=MessageRole.USER, content=user_prompt),
     ]
     try:
-        analysis = await provider.complete(messages)
+        raw = await provider.complete(messages)
+        cleaned, key_entities, conclusion = _parse_tail(raw)
         return {
             "key": expert.key,
             "name": expert.name,
             "emoji": expert.emoji,
-            "analysis": analysis,
+            "analysis": cleaned,
+            "key_entities": key_entities,
+            "conclusion": conclusion,
             "error": None,
         }
     except Exception as exc:  # noqa: BLE001
@@ -32,6 +59,8 @@ async def _run_expert(
             "name": expert.name,
             "emoji": expert.emoji,
             "analysis": None,
+            "key_entities": [],
+            "conclusion": None,
             "error": str(exc),
         }
 

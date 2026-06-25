@@ -13,6 +13,16 @@ export function listExperts(): Promise<AgentExpert[]> {
   return fetchWithAuth('/api/agents/experts')
 }
 
+export interface ProviderModels {
+  provider: string
+  models: string[]
+  has_key: boolean
+}
+
+export function listModels(): Promise<ProviderModels[]> {
+  return fetchWithAuth('/api/agents/models')
+}
+
 /**
  * Запускает панель ИИ-экспертов над графом и скачивает PDF-отчёт.
  * Возвращает имя скачанного файла.
@@ -20,7 +30,7 @@ export function listExperts(): Promise<AgentExpert[]> {
 export async function downloadAgentReport(
   sketchId: string,
   investigationName: string = '',
-  expertKeys?: string[]
+  opts: { expertKeys?: string[]; provider?: string; model?: string } = {}
 ): Promise<string> {
   const token = useAuthStore.getState().token
   const res = await fetch(`${API_URL}/api/agents/sketch/${sketchId}/report`, {
@@ -31,7 +41,9 @@ export async function downloadAgentReport(
     },
     body: JSON.stringify({
       investigation_name: investigationName,
-      expert_keys: expertKeys ?? null
+      expert_keys: opts.expertKeys ?? null,
+      provider: opts.provider ?? null,
+      model: opts.model ?? null
     })
   })
 
