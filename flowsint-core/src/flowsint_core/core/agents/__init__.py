@@ -3,6 +3,7 @@ from .graph_context import serialize_graph, build_user_prompt
 from .orchestrator import run_panel
 from .pdf_report import generate_report_pdf
 from .html_report import generate_report_html_pdf
+from .ai_import import extract_graph
 
 __all__ = [
     "EXPERTS",
@@ -13,4 +14,5 @@ __all__ = [
     "run_panel",
     "generate_report_pdf",
     "generate_report_html_pdf",
+    "extract_graph",
 ]

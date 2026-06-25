@@ -1,5 +1,7 @@
 """Роуты ИИ-агентов-экспертов: анализ графа расследования панелью экспертов."""
+import math
 import os
+import uuid
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
@@ -9,11 +11,13 @@ from fastapi.responses import Response
 from flowsint_core.core.agents import (
     EXPERTS,
     build_user_prompt,
+    extract_graph,
     generate_report_html_pdf,
     generate_report_pdf,
     run_panel,
     serialize_graph,
 )
+from flowsint_core.core.graph import GraphNode
 from flowsint_core.core.llm import create_llm_provider
 from flowsint_core.core.models import Profile
 from flowsint_core.core.postgre_db import get_db
@@ -24,6 +28,14 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+
+
+def _resolve_provider(db: Session, owner_id, provider_name: Optional[str], model: Optional[str]):
+    if provider_name:
+        vault = create_vault_service(db)
+        api_key = vault.get_secret(owner_id, f"{provider_name.upper()}_API_KEY")
+        return create_llm_provider(provider=provider_name, api_key=api_key, model=model)
+    return create_chat_service(db).get_llm_provider(owner_id)
 
 router = APIRouter()
 
@@ -191,3 +203,72 @@ async def report_sketch(
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+class AiImportRequest(BaseModel):
+    text: str
+    provider: Optional[str] = None
+    model: Optional[str] = None
+
+
+@router.post("/sketch/{sketch_id}/ai-import")
+async def ai_import(
+    sketch_id: str,
+    body: AiImportRequest,
+    db: Session = Depends(get_db),
+    current_user: Profile = Depends(get_current_user),
+):
+    """ИИ-извлечение сущностей и связей из текста с добавлением их в граф."""
+    if not (body.text or "").strip():
+        raise HTTPException(status_code=400, detail="Пустой текст.")
+    try:
+        provider = _resolve_provider(db, current_user.id, body.provider, body.model)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail=f"LLM не настроен: {exc}")
+
+    result = await extract_graph(provider, body.text)
+    nodes = result.get("nodes", [])
+    edges = result.get("edges", [])
+    if not nodes:
+        raise HTTPException(status_code=422, detail=result.get("error") or "Сущности не найдены в тексте.")
+
+    sketch_service = create_sketch_service(db)
+    now = datetime.utcnow().isoformat()
+    keymap = {}
+    added = 0
+    for i, n in enumerate(nodes):
+        ang = 2 * math.pi * i / max(len(nodes), 1)
+        gn = GraphNode(
+            id="tmp-" + uuid.uuid4().hex,
+            nodeLabel=n["label"],
+            nodeType=n["type"],
+            nodeShape="circle",
+            nodeMetadata={"created_at": now},
+            nodeProperties=n["properties"],
+            x=400.0 + 260.0 * math.cos(ang),
+            y=320.0 + 260.0 * math.sin(ang),
+        )
+        try:
+            res = sketch_service.add_node(UUID(sketch_id), current_user.id, gn)
+            node_obj = res.get("node") if isinstance(res, dict) else res
+            node_id = getattr(node_obj, "id", None)
+            if node_id is None and isinstance(node_obj, dict):
+                node_id = node_obj.get("id")
+            if node_id:
+                keymap[n["key"]] = node_id
+                added += 1
+        except Exception:
+            continue
+
+    ecount = 0
+    for e in edges:
+        s, t = keymap.get(e["source"]), keymap.get(e["target"])
+        if not s or not t:
+            continue
+        try:
+            sketch_service.add_relationship(UUID(sketch_id), current_user.id, s, t, e["label"])
+            ecount += 1
+        except Exception:
+            continue
+
+    return {"nodes_added": added, "edges_added": ecount}
