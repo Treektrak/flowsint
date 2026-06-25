@@ -17,9 +17,10 @@ import {
   Download,
   LassoSelect,
   ChevronDown,
-  SquareDashed
+  SquareDashed,
+  Sparkles
 } from 'lucide-react'
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import Filters from './filters/filters'
@@ -36,6 +37,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { sketchService } from '@/api/sketch-service'
+import { downloadAgentReport } from '@/api/agent-service'
 import { useParams } from '@tanstack/react-router'
 import { exportToPNG } from './graph/utils/export-to-png'
 import { PathFinder } from './graph/actions/path-finder'
@@ -226,6 +228,26 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
     [sketchId, exportToPNG, t]
   )
 
+  const [isReporting, setIsReporting] = useState(false)
+  const handleReport = useCallback(async () => {
+    if (!sketchId || isReporting) return
+    setIsReporting(true)
+    const pending = toast.loading(t('graphToolbar.reportGenerating'))
+    try {
+      const filename = await downloadAgentReport(sketchId, '')
+      toast.success(t('graphToolbar.reportReady', { filename }), { id: pending })
+    } catch (error) {
+      toast.error(
+        t('graphToolbar.reportFailed', {
+          error: error instanceof Error ? error.message : t('graphToolbar.unknownError')
+        }),
+        { id: pending }
+      )
+    } finally {
+      setIsReporting(false)
+    }
+  }, [sketchId, isReporting, t])
+
   const areExactlyTwoSelected = selectedNodes.length === 2
   const areMergeable =
     selectedNodes.length > 1 && selectedNodes.every((n) => n.nodeType === selectedNodes[0].nodeType)
@@ -403,6 +425,10 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleExport('png')}>
               {t('graphToolbar.exportAsPng')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleReport} disabled={isReporting}>
+              <Sparkles className="h-4 w-4 mr-2 opacity-70" />
+              {isReporting ? t('graphToolbar.reportGenerating') : t('graphToolbar.aiReport')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

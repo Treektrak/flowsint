@@ -121,7 +121,11 @@
     "exportAsPng": "Export as PNG",
     "refresh": "Refresh",
     "entities": "Entities",
-    "add": "Add"
+    "add": "Add",
+    "aiReport": "🧠 AI report (PDF)",
+    "reportGenerating": "Generating AI report… (~1 min)",
+    "reportReady": "Report ready: {{filename}}",
+    "reportFailed": "Failed to generate report: {{error}}"
   },
   "dialogs": {
     "newInvestigation": "New investigation",

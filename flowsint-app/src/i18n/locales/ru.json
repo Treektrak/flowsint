@@ -121,7 +121,11 @@
     "exportAsPng": "Экспортировать в PNG",
     "refresh": "Обновить",
     "entities": "Сущности",
-    "add": "Добавить"
+    "add": "Добавить",
+    "aiReport": "🧠 ИИ-отчёт (PDF)",
+    "reportGenerating": "Готовлю ИИ-отчёт… (~1 мин)",
+    "reportReady": "Отчёт готов: {{filename}}",
+    "reportFailed": "Не удалось сформировать отчёт: {{error}}"
   },
   "dialogs": {
     "newInvestigation": "Новое расследование",
