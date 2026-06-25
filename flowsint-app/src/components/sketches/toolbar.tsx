@@ -34,8 +34,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { Fragment } from 'react'
 import { sketchService } from '@/api/sketch-service'
 import { downloadAgentReport, listModels, type ProviderModels } from '@/api/agent-service'
 import { useParams } from '@tanstack/react-router'
@@ -440,15 +443,23 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
               <Sparkles className="h-4 w-4 mr-2 opacity-70" />
               {isReporting ? t('graphToolbar.reportGenerating') : t('graphToolbar.aiReport')}
             </DropdownMenuItem>
+            {providers.length > 0 && <DropdownMenuSeparator />}
             {providers.map((p) => (
-              <DropdownMenuItem
-                key={p.provider}
-                disabled={isReporting}
-                onClick={() => handleReport(p.provider, p.models[0])}
-                className="pl-8 text-xs text-muted-foreground"
-              >
-                {t('graphToolbar.reportWith', { model: `${p.provider} · ${p.models[0]}` })}
-              </DropdownMenuItem>
+              <Fragment key={p.provider}>
+                <DropdownMenuLabel className="text-[11px] uppercase tracking-wide text-muted-foreground/70 py-1">
+                  {p.label}
+                </DropdownMenuLabel>
+                {p.models.map((m) => (
+                  <DropdownMenuItem
+                    key={m.id}
+                    disabled={isReporting}
+                    onClick={() => handleReport(p.provider, m.id)}
+                    className="pl-6 text-xs"
+                  >
+                    ↳ {m.label}
+                  </DropdownMenuItem>
+                ))}
+              </Fragment>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>

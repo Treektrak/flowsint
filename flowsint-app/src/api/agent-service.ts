@@ -13,9 +13,15 @@ export function listExperts(): Promise<AgentExpert[]> {
   return fetchWithAuth('/api/agents/experts')
 }
 
+export interface ModelOption {
+  id: string
+  label: string
+}
+
 export interface ProviderModels {
   provider: string
-  models: string[]
+  label: string
+  models: ModelOption[]
   has_key: boolean
 }
 

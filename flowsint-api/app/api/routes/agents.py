@@ -26,12 +26,37 @@ from app.api.deps import get_current_user
 
 router = APIRouter()
 
-# Доступные провайдеры и их модели (для выбора в UI)
+# Доступные провайдеры и их модели (id + читаемая подпись) для выбора в UI
 PROVIDER_MODELS = {
-    "anthropic": ["claude-sonnet-4-6", "claude-opus-4-8", "claude-haiku-4-5-20251001"],
-    "openai": ["gpt-4o", "gpt-4o-mini"],
-    "deepseek": ["deepseek-chat", "deepseek-reasoner"],
-    "mistral": ["mistral-large-latest", "mistral-small-latest"],
+    "anthropic": {
+        "label": "Anthropic (Claude)",
+        "models": [
+            {"id": "claude-haiku-4-5-20251001", "label": "Haiku 4.5 (быстрая)"},
+            {"id": "claude-sonnet-4-6", "label": "Sonnet 4.6 (сбалансированная)"},
+            {"id": "claude-opus-4-8", "label": "Opus 4.8 (самая мощная)"},
+        ],
+    },
+    "openai": {
+        "label": "OpenAI",
+        "models": [
+            {"id": "gpt-4o", "label": "GPT-4o"},
+            {"id": "gpt-4o-mini", "label": "GPT-4o mini (быстрая)"},
+        ],
+    },
+    "deepseek": {
+        "label": "DeepSeek",
+        "models": [
+            {"id": "deepseek-chat", "label": "DeepSeek Chat"},
+            {"id": "deepseek-reasoner", "label": "DeepSeek Reasoner (рассуждающая)"},
+        ],
+    },
+    "mistral": {
+        "label": "Mistral",
+        "models": [
+            {"id": "mistral-large-latest", "label": "Mistral Large"},
+            {"id": "mistral-small-latest", "label": "Mistral Small"},
+        ],
+    },
 }
 
 _FONT_DIR = os.path.normpath(
@@ -111,9 +136,16 @@ def list_models(
     """Список LLM-провайдеров и моделей. Помечает те, для которых есть ключ в Vault."""
     vault = create_vault_service(db)
     out = []
-    for provider, models in PROVIDER_MODELS.items():
+    for provider, cfg in PROVIDER_MODELS.items():
         has_key = bool(vault.get_secret(current_user.id, f"{provider.upper()}_API_KEY"))
-        out.append({"provider": provider, "models": models, "has_key": has_key})
+        out.append(
+            {
+                "provider": provider,
+                "label": cfg["label"],
+                "models": cfg["models"],
+                "has_key": has_key,
+            }
+        )
     return out
 
 
