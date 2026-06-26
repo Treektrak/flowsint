@@ -21,6 +21,7 @@ import { GraphNode } from '@/types'
 import { useGraphSettingsStore } from '@/stores/graph-settings-store'
 import { cn } from '@/lib/utils'
 import { usePermissions } from '@/hooks/use-can'
+import { useTranslation } from 'react-i18next'
 
 const flagColors = {
   red: 'text-red-400 fill-red-200',
@@ -34,6 +35,7 @@ type FlagColor = keyof typeof flagColors
 
 const NodeActions = memo(
   ({ node, setMenu }: { node: GraphNode; setMenu?: (menu: any | null) => void }) => {
+    const { t } = useTranslation()
     const { id: sketchId } = useParams({ strict: false })
     const { canEdit } = usePermissions()
     const { confirm } = useConfirm()
@@ -71,8 +73,8 @@ const NodeActions = memo(
       if (!node.id || !sketchId) return
       if (
         !(await confirm({
-          title: `You are about to delete this node ?`,
-          message: 'The action is irreversible.'
+          title: t('misc2.deleteNodeConfirmTitle'),
+          message: t('misc2.deleteConfirmMessage')
         }))
       )
         return
@@ -82,9 +84,9 @@ const NodeActions = memo(
           return sketchService.deleteNodes(sketchId, JSON.stringify({ nodeIds: [node.id] }))
         })(),
         {
-          loading: `Deleting ${node.nodeProperties.label}...`,
-          success: 'Node deleted successfully.',
-          error: 'Failed to delete node.'
+          loading: t('misc2.deletingNode', { label: node.nodeProperties.label }),
+          success: t('misc2.nodeDeleteSuccess'),
+          error: t('misc2.nodeDeleteError')
         }
       )
     }
@@ -120,18 +122,18 @@ const NodeActions = memo(
         <DropdownMenuContent align="end" className="min-w-[140px]">
           <DropdownMenuItem onClick={handleOpenMainDialog}>
             <Plus className="h-3.5 w-3.5 mr-2" />
-            Add relation
+            {t('misc2.addRelation')}
           </DropdownMenuItem>
           {Boolean(settings?.general?.showFlow?.value) && (
             <DropdownMenuItem onClick={handleAskAI}>
               <Sparkles className="h-3.5 w-3.5 mr-2" />
-              Ask AI
+              {t('misc2.askAI')}
             </DropdownMenuItem>
           )}
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <Flag className={cn('h-3.5 w-3.5 mr-2', flagValue ? flagColors[flagValue] : '')} />
-              Flag
+              {t('misc2.flag')}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               <div className="flex gap-1 p-1">
@@ -159,7 +161,7 @@ const NodeActions = memo(
             className="text-destructive focus:text-destructive"
           >
             <Trash2 className="h-3.5 w-3.5 mr-2" />
-            Delete
+            {t('misc2.delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -2,8 +2,10 @@ import { PlusIcon, Zap, GitBranch } from 'lucide-react'
 import { memo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { useGraphStore } from '@/stores/graph-store'
+import { useTranslation } from 'react-i18next'
 
 const EmptyState = memo(() => {
+  const { t } = useTranslation()
   const setOpenMainDialog = useGraphStore((state) => state.setOpenMainDialog)
 
   const handleOpenNewAddItemDialog = useCallback(() => {
@@ -138,10 +140,9 @@ const EmptyState = memo(() => {
       {/* Content */}
       <div className="text-center space-y-4 max-w-md">
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight">Ready to explore connections?</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">{t('misc2.emptyStateTitle')}</h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Your investigation graph will come to life here. Add nodes, discover relationships, and
-            uncover hidden patterns in your data.
+            {t('misc2.emptyStateDescription')}
           </p>
         </div>
 
@@ -149,11 +150,11 @@ const EmptyState = memo(() => {
         <div className="flex justify-center gap-6 text-xs text-muted-foreground pt-2">
           <div className="flex items-center gap-1.5">
             <GitBranch className="w-3 h-3" />
-            <span>Network mapping</span>
+            <span>{t('misc2.networkMapping')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Zap className="w-3 h-3" />
-            <span>Real-time analysis</span>
+            <span>{t('misc2.realTimeAnalysis')}</span>
           </div>
         </div>
       </div>
@@ -166,9 +167,9 @@ const EmptyState = memo(() => {
           size="default"
         >
           <PlusIcon className="w-4 h-4" />
-          Add your first item
+          {t('misc2.addFirstItem')}
         </Button>
-        <p className="text-xs text-muted-foreground">Add your first node to begin</p>
+        <p className="text-xs text-muted-foreground">{t('misc2.addFirstNodeToBegin')}</p>
       </div>
     </div>
   )

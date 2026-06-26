@@ -17,8 +17,10 @@ import { useParams } from '@tanstack/react-router'
 import { useIcon } from '@/hooks/use-icon'
 import { RadioGroupItem } from '@/components/ui/radio-group'
 import { type GraphNode } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 export function CreateRelationDialog() {
+  const { t } = useTranslation()
   const { id: sketchId } = useParams({ strict: false })
   const selectedNodes = useGraphStore((state) => state.selectedNodes || [])
   const addEdge = useGraphStore((state) => state.addEdge)
@@ -55,9 +57,9 @@ export function CreateRelationDialog() {
         return sketchService.addEdge(sketchId as string, JSON.stringify(newEdgeObject))
       })(),
       {
-        loading: 'Creating relation...',
-        success: 'Relation successfully added.',
-        error: 'Unexpected error during relation creation.'
+        loading: t('misc2.createRelationLoading'),
+        success: t('misc2.createRelationSuccess'),
+        error: t('misc2.createRelationError')
       }
     )
   }
@@ -68,14 +70,14 @@ export function CreateRelationDialog() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <GitPullRequestArrow className="h-4 w-4" />
-            New relationship
+            {t('misc2.createRelationTitle')}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
           {/* Selected Nodes Display */}
           <div className="space-y-2 w-full">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Selected Nodes ({selectedNodes.length})
+              {t('misc2.selectedNodes', { count: selectedNodes.length })}
             </Label>
             <div className="flex w-full overflow-x-auto gap-2 min-w-0">
               {selectedNodes.map((node) => (
@@ -90,11 +92,11 @@ export function CreateRelationDialog() {
               htmlFor="relation-type"
               className="text-xs font-medium text-muted-foreground uppercase tracking-wide"
             >
-              Relationship Type
+              {t('misc2.relationshipType')}
             </Label>
             <Input
               id="relation-type"
-              placeholder="e.g., IS_RELATED_TO, WORKS_FOR, OWNS"
+              placeholder={t('misc2.relationTypePlaceholder')}
               value={relationType}
               onChange={(e) => setRelationType(e.target.value)}
               className="w-full h-9 text-sm"
@@ -105,7 +107,7 @@ export function CreateRelationDialog() {
           {/* Visual Preview (one-way with switch) */}
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Preview
+              {t('misc2.preview')}
             </Label>
             {/* Switch control outside of the preview box */}
             <div className="flex justify-end">
@@ -115,11 +117,11 @@ export function CreateRelationDialog() {
                 size="sm"
                 className="border"
                 onClick={() => setIsReversed((v) => !v)}
-                aria-label="Switch direction"
-                title="Switch direction"
+                aria-label={t('misc2.switchDirection')}
+                title={t('misc2.switchDirection')}
               >
                 <ArrowLeftRight className="h-4 w-4 mr-1" />
-                <span>Switch direction</span>
+                <span>{t('misc2.switchDirection')}</span>
               </Button>
             </div>
             <div className="p-3 border rounded-md bg-muted/20">
@@ -160,10 +162,10 @@ export function CreateRelationDialog() {
               size="sm"
               onClick={() => setOpenAddRelationDialog(false)}
             >
-              Cancel
+              {t('misc2.cancel')}
             </Button>
             <Button type="submit" size="sm" disabled={!relationType.trim()}>
-              Create
+              {t('misc2.create')}
             </Button>
           </DialogFooter>
         </form>

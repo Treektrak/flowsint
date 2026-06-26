@@ -4,6 +4,7 @@ import { investigationService } from '@/api/investigation-service'
 import { authService } from '@/api/auth-service'
 import { queryKeys } from '@/api/query-keys'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next'
 import type { Collaborator, InvestigationRole, Profile } from '@/types'
 import {
   Dialog,
@@ -38,25 +39,25 @@ import { cn } from '@/lib/utils'
 
 const ROLE_OPTIONS: {
   value: InvestigationRole
-  label: string
+  labelKey: string
   icon: typeof Eye
   className: string
 }[] = [
   {
     value: 'admin',
-    label: 'Admin',
+    labelKey: 'misc.roleAdmin',
     icon: Shield,
     className: 'bg-purple-500/15 text-purple-700 border-purple-500/30 dark:text-purple-400'
   },
   {
     value: 'editor',
-    label: 'Editor',
+    labelKey: 'misc.roleEditor',
     icon: Pencil,
     className: 'bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-400'
   },
   {
     value: 'viewer',
-    label: 'Viewer',
+    labelKey: 'misc.roleViewer',
     icon: Eye,
     className: 'bg-zinc-500/15 text-zinc-700 border-zinc-500/30 dark:text-zinc-400'
   }
@@ -64,25 +65,25 @@ const ROLE_OPTIONS: {
 
 const ROLE_BADGE: Record<
   InvestigationRole,
-  { label: string; icon: typeof Eye; className: string }
+  { labelKey: string; icon: typeof Eye; className: string }
 > = {
   owner: {
-    label: 'Owner',
+    labelKey: 'misc.roleOwner',
     icon: Crown,
     className: 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400'
   },
   admin: {
-    label: 'Admin',
+    labelKey: 'misc.roleAdmin',
     icon: Shield,
     className: 'bg-purple-500/15 text-purple-700 border-purple-500/30 dark:text-purple-400'
   },
   editor: {
-    label: 'Editor',
+    labelKey: 'misc.roleEditor',
     icon: Pencil,
     className: 'bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-400'
   },
   viewer: {
-    label: 'Viewer',
+    labelKey: 'misc.roleViewer',
     icon: Eye,
     className: 'bg-zinc-500/15 text-zinc-700 border-zinc-500/30 dark:text-zinc-400'
   }
@@ -97,6 +98,7 @@ const RoleBadge = ({
   className,
   ...props
 }: { role: InvestigationRole; className?: string } & React.ComponentProps<'div'>) => {
+  const { t } = useTranslation()
   const config = ROLE_BADGE[role]
   const Icon = config.icon
   return (
@@ -110,7 +112,7 @@ const RoleBadge = ({
       {...props}
     >
       <Icon className="w-3 h-3" />
-      {config.label}
+      {t(config.labelKey)}
     </Badge>
   )
 }
@@ -121,6 +123,7 @@ interface ShareDialogProps {
 }
 
 export function ShareDialog({ investigationId, children }: ShareDialogProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedEmail, setSelectedEmail] = useState('')
@@ -179,10 +182,10 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
       })
       setQuery('')
       setSelectedEmail('')
-      toast.success('Collaborator added')
+      toast.success(t('misc.collaboratorAdded'))
     },
     onError: (error: any) => {
-      const message = error?.message || 'Failed to add collaborator'
+      const message = error?.message || t('misc.failedToAddCollaborator')
       toast.error(message)
     }
   })
@@ -194,9 +197,9 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.investigations.collaborators(investigationId)
       })
-      toast.success('Role updated')
+      toast.success(t('misc.roleUpdated'))
     },
-    onError: () => toast.error('Failed to update role')
+    onError: () => toast.error(t('misc.failedToUpdateRole'))
   })
 
   const removeMutation = useMutation({
@@ -206,9 +209,9 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.investigations.collaborators(investigationId)
       })
-      toast.success('Collaborator removed')
+      toast.success(t('misc.collaboratorRemoved'))
     },
-    onError: () => toast.error('Failed to remove collaborator')
+    onError: () => toast.error(t('misc.failedToRemoveCollaborator'))
   })
 
   const handleInvite = () => {
@@ -221,9 +224,9 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-xl gap-0 p-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-4">
-          <DialogTitle className="text-base">Share investigation</DialogTitle>
+          <DialogTitle className="text-base">{t('misc.shareInvestigation')}</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Invite collaborators and manage access.
+            {t('misc.inviteCollaboratorsManageAccess')}
           </DialogDescription>
         </DialogHeader>
 
@@ -232,7 +235,7 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Input
-                placeholder="Search by name or email..."
+                placeholder={t('misc.searchByNameOrEmail')}
                 value={query}
                 onChange={(e) => handleQueryChange(e.target.value)}
                 onKeyDown={(e) => {
@@ -279,7 +282,7 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
                     <SelectItem key={opt.value} value={opt.value}>
                       <span className="flex items-center gap-1.5">
                         <Icon className="w-3.5 h-3.5 opacity-60" />
-                        {opt.label}
+                        {t(opt.labelKey)}
                       </span>
                     </SelectItem>
                   )
@@ -293,7 +296,7 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
               disabled={!selectedEmail.trim() || addMutation.isPending}
             >
               <UserPlus className="w-4 h-4 mr-1.5" />
-              Invite
+              {t('misc.invite')}
             </Button>
           </div>
         </div>
@@ -318,7 +321,7 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
           ) : collaborators.length === 0 ? (
             <div className="py-10 flex flex-col items-center gap-2 text-center">
               <Users className="w-8 h-8 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">No collaborators yet</p>
+              <p className="text-sm text-muted-foreground">{t('misc.noCollaboratorsYet')}</p>
             </div>
           ) : (
             <div className="p-2">
@@ -359,7 +362,7 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
                                 className="flex items-center gap-2"
                               >
                                 <Icon className="w-3.5 h-3.5 opacity-60" />
-                                {opt.label}
+                                {t(opt.labelKey)}
                                 {isActive && <Check className="w-3.5 h-3.5 ml-auto" />}
                               </DropdownMenuItem>
                             )
@@ -394,7 +397,7 @@ export function ShareDialog({ investigationId, children }: ShareDialogProps) {
             <Separator />
             <div className="px-5 py-3">
               <p className="text-xs text-muted-foreground">
-                {collaborators.length} member{collaborators.length !== 1 ? 's' : ''} have access
+                {t('misc.membersHaveAccess', { count: collaborators.length })}
               </p>
             </div>
           </>

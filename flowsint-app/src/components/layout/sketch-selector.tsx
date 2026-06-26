@@ -13,8 +13,10 @@ import { analysisService } from '@/api/analysis-service'
 import { Waypoints, FileText, Search, ChevronDown, Plus, ArrowLeft, Home } from 'lucide-react'
 import NewSketch from '@/components/sketches/new-sketch'
 import { queryKeys } from '@/api/query-keys'
+import { useTranslation } from 'react-i18next'
 
 export default function CaseSelector() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { id, investigationId, type } = useParams({ strict: false })
   const [open, setOpen] = useState(false)
@@ -90,10 +92,10 @@ export default function CaseSelector() {
               >
                 <span className="text-ellipsis truncate">
                   {id === 'overview' || !id
-                    ? 'Overview'
+                    ? t('misc.overview')
                     : investigation?.sketches?.find((s: Sketch) => s.id === id)?.title ||
                       analyses?.find((a: Analysis) => a.id === id)?.title ||
-                      'Overview'}
+                      t('misc.overview')}
                 </span>
                 <ChevronDown className="w-4 h-4 shrink-0" />
               </Button>
@@ -104,7 +106,7 @@ export default function CaseSelector() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search sketches and analyses..."
+                  placeholder={t('misc.searchSketchesAnalyses')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8 h-8 text-sm"
@@ -123,7 +125,7 @@ export default function CaseSelector() {
                 >
                   <span className="text-left truncate flex items-center gap-1 text-muted-foreground">
                     <Home strokeWidth={1.5} />
-                    <ArrowLeft strokeWidth={1.5} /> back to case
+                    <ArrowLeft strokeWidth={1.5} /> {t('misc.backToCase')}
                   </span>
                 </Button>
               </div>
@@ -173,7 +175,7 @@ export default function CaseSelector() {
                   className="w-full justify-start gap-2 h-auto py-1.5 px-2 rounded-none hover:bg-accent text-muted-foreground hover:text-foreground text-sm"
                 >
                   <Plus className="w-4 h-4" />
-                  <span className="text-left truncate">Create new sketch</span>
+                  <span className="text-left truncate">{t('misc.createNewSketch')}</span>
                 </Button>
               </NewSketch>
             </div>

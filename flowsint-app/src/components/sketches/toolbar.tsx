@@ -41,6 +41,7 @@ import {
 import { Fragment } from 'react'
 import { sketchService } from '@/api/sketch-service'
 import { downloadAgentReport, listModels, type ProviderModels } from '@/api/agent-service'
+import { AiTools } from './ai-tools'
 import { useParams } from '@tanstack/react-router'
 import { exportToPNG } from './graph/utils/export-to-png'
 import { PathFinder } from './graph/actions/path-finder'
@@ -463,6 +464,7 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        <AiTools sketchId={sketchId} onDone={() => refetchGraph?.()} />
         <ToolbarButton
           onClick={handleRefresh}
           disabled={isLoading}

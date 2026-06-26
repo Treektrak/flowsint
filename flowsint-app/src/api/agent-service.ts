@@ -29,6 +29,32 @@ export function listModels(): Promise<ProviderModels[]> {
   return fetchWithAuth('/api/agents/models')
 }
 
+export interface ImportResult {
+  nodes_added: number
+  edges_added: number
+  events?: number
+}
+
+/** ИИ-импорт: извлечь сущности и связи из текста в граф. */
+export function aiImport(sketchId: string, text: string): Promise<ImportResult> {
+  return fetchWithAuth(`/api/agents/sketch/${sketchId}/ai-import`, {
+    method: 'POST',
+    body: JSON.stringify({ text })
+  })
+}
+
+/** SpiderFoot-скан: собрать данные по цели встроенным движком и добавить в граф. */
+export function spiderfootScan(
+  sketchId: string,
+  target: string,
+  preset: string = 'fast'
+): Promise<ImportResult> {
+  return fetchWithAuth(`/api/agents/sketch/${sketchId}/spiderfoot-scan`, {
+    method: 'POST',
+    body: JSON.stringify({ target, preset })
+  })
+}
+
 /**
  * Запускает панель ИИ-экспертов над графом и скачивает PDF-отчёт.
  * Возвращает имя скачанного файла.
