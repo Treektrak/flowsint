@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { useState } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export interface SchemaField {
   id: string
@@ -26,22 +27,22 @@ export interface SchemaField {
 }
 
 const FIELD_TYPES = [
-  { value: 'string', label: 'Text' },
-  { value: 'number', label: 'Number' },
-  { value: 'integer', label: 'Integer' },
-  { value: 'boolean', label: 'Boolean' },
-  { value: 'array', label: 'List' },
-  { value: 'object', label: 'Object' }
+  { value: 'string', labelKey: 'customTypes.fieldType.string' },
+  { value: 'number', labelKey: 'customTypes.fieldType.number' },
+  { value: 'integer', labelKey: 'customTypes.fieldType.integer' },
+  { value: 'boolean', labelKey: 'customTypes.fieldType.boolean' },
+  { value: 'array', labelKey: 'customTypes.fieldType.array' },
+  { value: 'object', labelKey: 'customTypes.fieldType.object' }
 ] as const
 
 const FIELD_FORMATS = [
-  { value: 'none', label: 'None' },
-  { value: 'email', label: 'Email' },
-  { value: 'uri', label: 'URL' },
-  { value: 'date', label: 'Date' },
-  { value: 'date-time', label: 'Date & Time' },
-  { value: 'ipv4', label: 'IPv4' },
-  { value: 'ipv6', label: 'IPv6' }
+  { value: 'none', labelKey: 'customTypes.fieldFormat.none' },
+  { value: 'email', labelKey: 'customTypes.fieldFormat.email' },
+  { value: 'uri', labelKey: 'customTypes.fieldFormat.uri' },
+  { value: 'date', labelKey: 'customTypes.fieldFormat.date' },
+  { value: 'date-time', labelKey: 'customTypes.fieldFormat.dateTime' },
+  { value: 'ipv4', labelKey: 'customTypes.fieldFormat.ipv4' },
+  { value: 'ipv6', labelKey: 'customTypes.fieldFormat.ipv6' }
 ] as const
 
 interface FieldRowProps {
@@ -51,6 +52,7 @@ interface FieldRowProps {
 }
 
 export function FieldRow({ field, onUpdate, onDelete }: FieldRowProps) {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const dragControls = useDragControls()
 
@@ -101,13 +103,13 @@ export function FieldRow({ field, onUpdate, onDelete }: FieldRowProps) {
                 onChange={(e) =>
                   onUpdate({ key: e.target.value.toLowerCase().replace(/\s+/g, '_') })
                 }
-                placeholder="field_key"
+                placeholder={t('customTypes.fieldKeyPlaceholder')}
                 className="h-8 text-sm border-transparent bg-transparent hover:border-border focus:border-border focus:bg-background transition-colors"
               />
               <Input
                 value={field.title}
                 onChange={(e) => onUpdate({ title: e.target.value })}
-                placeholder="Display name"
+                placeholder={t('customTypes.displayNamePlaceholder')}
                 className="h-8 text-sm border-transparent bg-transparent hover:border-border focus:border-border focus:bg-background transition-colors"
               />
               <Select value={field.type} onValueChange={(v: string) => onUpdate({ type: v })}>
@@ -115,9 +117,9 @@ export function FieldRow({ field, onUpdate, onDelete }: FieldRowProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {FIELD_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
+                  {FIELD_TYPES.map((ft) => (
+                    <SelectItem key={ft.value} value={ft.value}>
+                      {t(ft.labelKey)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -130,9 +132,9 @@ export function FieldRow({ field, onUpdate, onDelete }: FieldRowProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {FIELD_FORMATS.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>
-                      {f.label}
+                  {FIELD_FORMATS.map((ff) => (
+                    <SelectItem key={ff.value} value={ff.value}>
+                      {t(ff.labelKey)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -156,11 +158,11 @@ export function FieldRow({ field, onUpdate, onDelete }: FieldRowProps) {
             <div className="px-10 pb-3 space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Description</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t('customTypes.fieldDescription')}</label>
                   <Textarea
                     value={field.description || ''}
                     onChange={(e) => onUpdate({ description: e.target.value })}
-                    placeholder="Describe what this field is for..."
+                    placeholder={t('customTypes.fieldDescriptionPlaceholder')}
                     rows={2}
                     className="text-sm resize-none"
                   />
@@ -168,7 +170,7 @@ export function FieldRow({ field, onUpdate, onDelete }: FieldRowProps) {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-medium text-muted-foreground">
-                      Required field
+                      {t('customTypes.requiredField')}
                     </label>
                     <Switch
                       checked={field.required}
