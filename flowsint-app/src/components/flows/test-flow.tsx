@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../ui/dialog'
 import { DynamicForm } from '../sketches/dynamic-form'
+import { useTranslation } from 'react-i18next'
 
 interface TestFlowProps {
   open: boolean
@@ -11,11 +12,12 @@ interface TestFlowProps {
 }
 
 const TestFlow = memo(({ open, setOpen, type, loading, onSubmit }: TestFlowProps) => {
+  const { t } = useTranslation()
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
-        <DialogTitle>Test flow</DialogTitle>
-        <DialogDescription>Fill the required data</DialogDescription>
+        <DialogTitle>{t('flows.testFlow')}</DialogTitle>
+        <DialogDescription>{t('flows.fillRequiredData')}</DialogDescription>
         <DynamicForm currentNodeType={type} isForm={true} loading={loading} onSubmit={onSubmit} />
       </DialogContent>
     </Dialog>

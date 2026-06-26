@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { Button } from '../ui/button'
 import { ButtonHandle } from '../xyflow/button-handle'
 import { useIcon } from '@/hooks/use-icon'
+import { useTranslation } from 'react-i18next'
 
 // Custom equality function to prevent unnecessary re-renders
 function areEqual(prevProps: EnricherNodeProps, nextProps: EnricherNodeProps) {
@@ -46,6 +47,7 @@ const getStateColor = (state?: string) => {
 
 // Enricher node component for enricher/enricher nodes only
 const EnricherNode = memo(({ data, isConnectable }: EnricherNodeProps) => {
+  const { t } = useTranslation()
   const colors = useNodesDisplaySettings((s) => s.colors)
   const inputColor = colors[data.inputs.type.toLowerCase()]
   const outputColor = colors[data.outputs.type.toLowerCase()]
@@ -97,7 +99,7 @@ const EnricherNode = memo(({ data, isConnectable }: EnricherNodeProps) => {
             <div className="absolute top-0 right-0 flex items-center gap-2">
               {data.computationState && (
                 <Badge className={getStateColor(data.computationState)}>
-                  {data.computationState}
+                  {t(`flows.state.${data.computationState}`)}
                 </Badge>
               )}
             </div>
@@ -169,7 +171,7 @@ const EnricherNode = memo(({ data, isConnectable }: EnricherNodeProps) => {
                   <TriangleAlert className="h-4 w-4 text-yellow-500" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Configuration required</p>
+                  <p>{t('flows.configurationRequired')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>

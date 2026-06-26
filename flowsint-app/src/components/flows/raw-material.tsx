@@ -7,8 +7,10 @@ import { Button } from '../ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { SkeletonList } from '../shared/skeleton-list'
 import { flowService } from '@/api/flow-service'
+import { useTranslation } from 'react-i18next'
 
 export default function RawMaterial() {
+  const { t } = useTranslation()
   const {
     data: materials,
     isLoading,
@@ -43,7 +45,7 @@ export default function RawMaterial() {
     return result
   }, [searchTerm, materials?.items])
 
-  if (error) return <div>error</div>
+  if (error) return <div>{t('flows.error')}</div>
 
   if (isLoading)
     return (
@@ -57,7 +59,7 @@ export default function RawMaterial() {
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
-          placeholder="Search enrichers..."
+          placeholder={t('flows.searchEnrichers')}
           className="pl-8 border! border-border"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -91,7 +93,7 @@ export default function RawMaterial() {
         ))}
         {Object.keys(filteredEnrichers).length === 0 && (
           <div className="text-center py-4 text-muted-foreground">
-            No enrichers found matching "{searchTerm}"
+            {t('flows.noEnrichersMatchTerm', { term: searchTerm })}
           </div>
         )}
       </div>

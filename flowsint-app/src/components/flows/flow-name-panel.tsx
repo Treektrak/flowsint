@@ -6,6 +6,7 @@ import { flowService } from '@/api/flow-service'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/api/query-keys'
 import type { Flow } from '@/types/flow'
+import { useTranslation } from 'react-i18next'
 
 interface FlowNamePanelProps {
   flow?: Flow
@@ -14,9 +15,10 @@ interface FlowNamePanelProps {
 }
 
 export const FlowNamePanel = ({ flow, onUpdate, disabled = false }: FlowNamePanelProps) => {
+  const { t } = useTranslation()
   const [isEditingName, setIsEditingName] = useState(false)
   const [isEditingDesc, setIsEditingDesc] = useState(false)
-  const [name, setName] = useState(flow?.name || 'My flow')
+  const [name, setName] = useState(flow?.name || t('flows.defaultFlowNameShort'))
   const [description, setDescription] = useState(flow?.description || '')
   const [isSaving, setIsSaving] = useState(false)
   const nameInputRef = useRef<HTMLInputElement>(null)
@@ -35,18 +37,20 @@ export const FlowNamePanel = ({ flow, onUpdate, disabled = false }: FlowNamePane
       queryClient.invalidateQueries({
         queryKey: queryKeys.flows.detail(variables.flowId)
       })
-      toast.success('Flow updated successfully.')
+      toast.success(t('flows.flowUpdated'))
     },
     onError: (error) => {
       toast.error(
-        'Failed to update flow: ' + (error instanceof Error ? error.message : 'Unknown error')
+        t('flows.flowUpdateFailed') +
+          ' ' +
+          (error instanceof Error ? error.message : t('flows.unknownError'))
       )
     }
   })
 
   useEffect(() => {
     if (flow) {
-      setName(flow.name || 'My flow')
+      setName(flow.name || t('flows.defaultFlowNameShort'))
       setDescription(flow.description || '')
     }
   }, [flow])
@@ -108,7 +112,7 @@ export const FlowNamePanel = ({ flow, onUpdate, disabled = false }: FlowNamePane
     } else if (e.key === 'Escape') {
       if (field === 'name') {
         setIsEditingName(false)
-        setName(flow?.name || 'My flow')
+        setName(flow?.name || t('flows.defaultFlowNameShort'))
       } else {
         setIsEditingDesc(false)
         setDescription(flow?.description || '')
@@ -129,14 +133,14 @@ export const FlowNamePanel = ({ flow, onUpdate, disabled = false }: FlowNamePane
             onKeyDown={(e) => handleKeyDown(e, 'name', name)}
             disabled={disabled || isSaving}
             className="!text-xl font-semibold bg-transparent border-b border-gray-300 focus:border-primary focus:outline-none !px-1 !py-0.5 w-full"
-            placeholder="Enter flow name"
+            placeholder={t('flows.enterFlowName')}
           />
         ) : (
           <h1
             className="text-xl font-semibold cursor-pointer hover:bg-foreground/10 px-1 py-0.5 rounded-mdtransition-colors"
             onClick={() => !disabled && setIsEditingName(true)}
           >
-            {name || 'My flow'}
+            {name || t('flows.defaultFlowNameShort')}
           </h1>
         )}
 
@@ -150,14 +154,16 @@ export const FlowNamePanel = ({ flow, onUpdate, disabled = false }: FlowNamePane
             onKeyDown={(e) => handleKeyDown(e, 'description', description)}
             disabled={disabled || isSaving}
             className="text-sm text-muted-foreground bg-transparent border-b border-gray-300 focus:border-primary focus:outline-none px-1 py-0.5 w-full"
-            placeholder="Add a description..."
+            placeholder={t('flows.addDescription')}
           />
         ) : (
           <p
             className="text-sm text-muted-foreground cursor-pointer hover:bg-foreground/10 px-1 py-0.5 rounded-mdtransition-colors min-h-[1.5rem]"
             onClick={() => !disabled && setIsEditingDesc(true)}
           >
-            {description || <span className="italic text-gray-400">Add a description...</span>}
+            {description || (
+              <span className="italic text-gray-400">{t('flows.addDescription')}</span>
+            )}
           </p>
         )}
       </Card>
