@@ -6,6 +6,7 @@ import Loader from '@/components/loader'
 import { GraphNode } from '@/types'
 import { RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 const NeighborsGraph = memo(
   ({
@@ -17,6 +18,7 @@ const NeighborsGraph = memo(
     currentNode: GraphNode
     nodeLength: number
   }) => {
+    const { t } = useTranslation()
     const containerRef = useRef<HTMLDivElement>(null)
 
     const {
@@ -52,7 +54,7 @@ const NeighborsGraph = memo(
     if (error)
       return (
         <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-          Could not load neighbors.
+          {t('entities.couldNotLoadNeighbors')}
         </div>
       )
     return (
@@ -65,7 +67,7 @@ const NeighborsGraph = memo(
           <>
             <div className="top-0 left-0 bg-card/60 backdrop-blur z-10 p-1 rounded-br-lg absolute text-sm flex gap-1">
               <span className="font-semibold">{neighborsData.nds.length - 1}</span>
-              <span className="opacity-70">neighbor(s)</span>
+              <span className="opacity-70">{t('entities.neighbors')}</span>
             </div>
 
             <div className="top-.5 p-1 right-8 bg-card/60 backdrop-blur z-10 rounded-br-lg absolute text-sm flex gap-1">

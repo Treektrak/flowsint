@@ -6,6 +6,7 @@ from flowsint_core.core.models import Profile
 from flowsint_core.core.postgre_db import get_db
 from flowsint_core.core.services import create_type_registry_service
 from app.api.deps import get_current_user
+from app.api.i18n_ru import translate_types_list
 
 router = APIRouter()
 
@@ -16,7 +17,7 @@ async def get_types_list(
 ):
     """Get the complete types list for sketches."""
     service = create_type_registry_service(db)
-    return service.get_types_list(current_user.id)
+    return translate_types_list(service.get_types_list(current_user.id))
 
 
 class DetectRequest(BaseModel):

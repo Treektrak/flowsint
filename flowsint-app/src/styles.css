@@ -127,25 +127,27 @@ html {
 
 @layer base {
   :root {
-    --sidebar-background: hsl(0, 0%, 98%);
-    --sidebar-foreground: hsl(240, 5.3%, 26.1%);
-    --sidebar-primary: hsl(240, 5.9%, 10%);
-    --sidebar-primary-foreground: hsl(0, 0%, 98%);
-    --sidebar-accent: hsl(240, 4.8%, 95.9%);
-    --sidebar-accent-foreground: hsl(240, 5.9%, 10%);
-    --sidebar-border: hsl(220, 13%, 91%);
-    --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+    /* Lunmart sidebar (светлая) */
+    --sidebar-background: #ffffff;
+    --sidebar-foreground: #0a2540;
+    --sidebar-primary: #1d5288;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #fff2c7;
+    --sidebar-accent-foreground: #7a5700;
+    --sidebar-border: #d9e6f3;
+    --sidebar-ring: #ffbf2f;
   }
 
   .dark {
-    --sidebar-background: hsl(0, 0, 11);
-    --sidebar-foreground: hsl(240, 4.8%, 95.9%);
-    --sidebar-primary: hsl(224.3, 76.3%, 48%);
-    --sidebar-primary-foreground: hsl(0, 0%, 100%);
-    --sidebar-accent: hsl(240, 3.7%, 15.9%);
-    --sidebar-accent-foreground: hsl(240, 4.8%, 95.9%);
-    --sidebar-border: hsl(240, 3.7%, 15.9%);
-    --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+    /* Lunmart sidebar (тёмная) */
+    --sidebar-background: #03101f;
+    --sidebar-foreground: #d9e6f3;
+    --sidebar-primary: #4a7fb5;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e6a300;
+    --sidebar-accent-foreground: #051c33;
+    --sidebar-border: #0d3357;
+    --sidebar-ring: #ffbf2f;
   }
 
   * {
@@ -428,38 +430,39 @@ html {
 }
 
 :root {
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.27 0 0);
-  --card: oklch(1.4 0 0);
-  --card-foreground: oklch(0.27 0 0);
-  --popover: oklch(21 0 0);
-  --popover-foreground: oklch(0.27 0 0);
-  --primary: oklch(0.6397 0.172 36.4421);
-  --primary-foreground: oklch(0 0 0);
-  --secondary: oklch(0.97 0 264.54);
-  --secondary-foreground: oklch(0.45 0.03 256.8);
-  --muted: oklch(0.98 0 247.84);
-  --muted-foreground: oklch(0.55 0.02 264.36);
-  --accent: oklch(0.99 0.02 95.28);
-  --accent-foreground: oklch(0.47 0.12 46.2);
+  /* Палитра Lunmart: белый / синий / жёлтый */
+  --background: #ffffff;
+  --foreground: #0a2540;
+  --card: #ffffff;
+  --card-foreground: #0a2540;
+  --popover: #ffffff;
+  --popover-foreground: #0a2540;
+  --primary: #1d5288;
+  --primary-foreground: #ffffff;
+  --secondary: #eef4fb;
+  --secondary-foreground: #0d3357;
+  --muted: #eef4fb;
+  --muted-foreground: #64748b;
+  --accent: #fff2c7;
+  --accent-foreground: #7a5700;
   --destructive: oklch(0.64 0.21 25.33);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.93 0.01 264.53);
-  --input: oklch(0.93 0.01 264.53);
-  --ring: oklch(0.77 0.16 70.08);
-  --chart-1: oklch(0.77 0.16 70.08);
-  --chart-2: oklch(0.67 0.16 58.32);
-  --chart-3: oklch(0.56 0.15 49);
-  --chart-4: oklch(0.47 0.12 46.2);
-  --chart-5: oklch(0.41 0.11 45.9);
-  --sidebar: oklch(0.98 0 247.84);
-  --sidebar-foreground: oklch(0.27 0 0);
-  --sidebar-primary: oklch(0.77 0.16 70.08);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.99 0.02 95.28);
-  --sidebar-accent-foreground: oklch(0.47 0.12 46.2);
-  --sidebar-border: oklch(0.93 0.01 264.53);
-  --sidebar-ring: oklch(0.77 0.16 70.08);
+  --destructive-foreground: #ffffff;
+  --border: #d9e6f3;
+  --input: #d9e6f3;
+  --ring: #ffbf2f;
+  --chart-1: #1d5288;
+  --chart-2: #ffbf2f;
+  --chart-3: #4a7fb5;
+  --chart-4: #e6a300;
+  --chart-5: #7da7d1;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a2540;
+  --sidebar-primary: #1d5288;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fff2c7;
+  --sidebar-accent-foreground: #7a5700;
+  --sidebar-border: #d9e6f3;
+  --sidebar-ring: #ffbf2f;
   --font-sans: Inter, sans-serif;
   --font-serif: Source Serif 4, serif;
   --font-mono: JetBrains Mono, monospace;
@@ -473,46 +476,47 @@ html {
   --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 8px 10px -2px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
   --success: oklch(0.6 0.12 145);
-  --warning: oklch(0.7 0.12 80);
-  --info: oklch(0.6 0.1 240);
+  --warning: #ffbf2f;
+  --info: #1d5288;
   --dot-color: oklch(0.3 0.002 260);
   --dot-size: 1px;
   --dot-spacing: 24px;
 }
 
 .dark {
-  --background: oklch(0.22 0 0);
-  --foreground: oklch(0.92 0 0);
-  --card: oklch(0.23 0 0);
-  --card-foreground: oklch(0.92 0 0);
-  --popover: oklch(0.27 0 0);
-  --popover-foreground: oklch(0.92 0 0);
-  --primary: oklch(0.6397 0.172 36.4421);
-  --primary-foreground: oklch(0 0 0);
-  --secondary: oklch(0.27 0 0);
-  --secondary-foreground: oklch(0.92 0 0);
-  --muted: oklch(0.27 0 0);
-  --muted-foreground: oklch(0.72 0 0);
-  --accent: oklch(0.47 0.12 46.2);
-  --accent-foreground: oklch(0.92 0.12 95.75);
+  /* Палитра Lunmart, тёмно-синяя гамма */
+  --background: #051c33;
+  --foreground: #d9e6f3;
+  --card: #082743;
+  --card-foreground: #eef4fb;
+  --popover: #082743;
+  --popover-foreground: #eef4fb;
+  --primary: #4a7fb5;
+  --primary-foreground: #ffffff;
+  --secondary: #0d3357;
+  --secondary-foreground: #eef4fb;
+  --muted: #0d3357;
+  --muted-foreground: #94a3b8;
+  --accent: #e6a300;
+  --accent-foreground: #051c33;
   --destructive: oklch(0.64 0.21 25.33);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.29 0 0);
-  --input: oklch(0.37 0 0);
-  --ring: oklch(0.77 0.16 70.08);
-  --chart-1: oklch(0.84 0.16 84.43);
-  --chart-2: oklch(0.67 0.16 58.32);
-  --chart-3: oklch(0.47 0.12 46.2);
-  --chart-4: oklch(0.56 0.15 49);
-  --chart-5: oklch(0.47 0.12 46.2);
-  --sidebar: oklch(0.17 0 0);
-  --sidebar-foreground: oklch(0.92 0 0);
-  --sidebar-primary: oklch(0.77 0.16 70.08);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.47 0.12 46.2);
-  --sidebar-accent-foreground: oklch(0.92 0.12 95.75);
-  --sidebar-border: oklch(0.37 0 0);
-  --sidebar-ring: oklch(0.77 0.16 70.08);
+  --destructive-foreground: #ffffff;
+  --border: #0d3357;
+  --input: #14406b;
+  --ring: #ffbf2f;
+  --chart-1: #4a7fb5;
+  --chart-2: #ffbf2f;
+  --chart-3: #7da7d1;
+  --chart-4: #e6a300;
+  --chart-5: #b3cce6;
+  --sidebar: #03101f;
+  --sidebar-foreground: #d9e6f3;
+  --sidebar-primary: #4a7fb5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e6a300;
+  --sidebar-accent-foreground: #051c33;
+  --sidebar-border: #0d3357;
+  --sidebar-ring: #ffbf2f;
   --font-sans: Inter, sans-serif;
   --font-serif: Source Serif 4, serif;
   --font-mono: JetBrains Mono, monospace;

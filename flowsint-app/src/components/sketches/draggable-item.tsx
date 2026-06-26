@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useNodesDisplaySettings } from '@/stores/node-display-settings'
 import { useActionItems } from '@/hooks/use-action-items'
 import { findActionItemByKey } from '@/lib/action-items'
+import { useTranslation } from 'react-i18next'
 
 interface DraggableItemProps {
   label: string
@@ -26,6 +27,7 @@ export const DraggableItem = memo(function DraggableItem({
   disabled = false,
   description
 }: DraggableItemProps) {
+  const { t } = useTranslation()
   const handleOpenFormModal = useGraphStore((s) => s.handleOpenFormModal)
   const { actionItems } = useActionItems()
   const [isDragging, setIsDragging] = useState(false)
@@ -78,7 +80,7 @@ export const DraggableItem = memo(function DraggableItem({
           </button>
         </TooltipTrigger>
         <TooltipContent>
-          {disabled ? 'This item is not available' : 'Drag and drop to add to the graph'}
+          {disabled ? t('misc2.itemNotAvailable') : t('misc2.dragToAddToGraph')}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

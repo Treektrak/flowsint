@@ -5,6 +5,7 @@ import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "@
 import { memo, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import type { RuleFilter, Filters, RuleKey, RuleOperator } from "@/types/filter"
+import { useTranslation } from "react-i18next"
 
 type RuleFiltersProps = {
   filters: Filters
@@ -12,6 +13,7 @@ type RuleFiltersProps = {
 }
 
 function RuleFilters({ filters, setFilters }: RuleFiltersProps) {
+  const { t } = useTranslation()
   const [draft, setDraft] = useState<Filters>(filters)
 
   const { rules } = draft
@@ -49,7 +51,7 @@ function RuleFilters({ filters, setFilters }: RuleFiltersProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="opacity-90 text-sm">Filter by rule</p>
+        <p className="opacity-90 text-sm">{t('misc2.filterByRule')}</p>
 
         <div className="flex gap-2">
           <Button
@@ -58,7 +60,7 @@ function RuleFilters({ filters, setFilters }: RuleFiltersProps) {
             size="sm"
             onClick={addRule}
           >
-            <Plus className="text-muted-foreground !h-3 !w-3" /> New rule
+            <Plus className="text-muted-foreground !h-3 !w-3" /> {t('misc2.newRule')}
           </Button>
 
           <Button
@@ -68,14 +70,14 @@ function RuleFilters({ filters, setFilters }: RuleFiltersProps) {
             size="sm"
             onClick={applyChanges}
           >
-            Apply
+            {t('misc2.apply')}
           </Button>
         </div>
       </div>
 
       {rules.length === 0 ? (
         <p className="text-xs text-muted-foreground">
-          Start by adding a filter rule.
+          {t('misc2.startByAddingRule')}
         </p>
       ) : (
         <ul className="space-y-2">
@@ -100,7 +102,9 @@ type RuleItemProps = {
   onRemove: () => void
 }
 
-const RuleItem = memo(({ rule, onChange, onRemove }: RuleItemProps) => (
+const RuleItem = memo(({ rule, onChange, onRemove }: RuleItemProps) => {
+  const { t } = useTranslation()
+  return (
   <li>
     <div className="flex gap-2 justify-between">
       <KeyDropDown value={rule.key} onChange={(v) => onChange({ key: v })} />
@@ -111,7 +115,7 @@ const RuleItem = memo(({ rule, onChange, onRemove }: RuleItemProps) => (
         value={rule.matcher}
         onChange={e => onChange({ matcher: e.target.value })}
         className="h-7 grow w-1/3"
-        placeholder="matcher"
+        placeholder={t('misc2.matcher')}
       />
 
       <Button
@@ -124,22 +128,26 @@ const RuleItem = memo(({ rule, onChange, onRemove }: RuleItemProps) => (
       </Button>
     </div>
   </li>
-))
+  )
+})
 
 
 const KEYS: RuleKey[] = ["label", "domain", "ip"]
 const OPERATORS: RuleOperator[] = ["is", "not", "like", "startsWith", "endsWith"]
 
-const KeyDropDown = memo(({ value, onChange }: { value: RuleKey, onChange: (v: RuleKey) => void }) => (
+const KeyDropDown = memo(({ value, onChange }: { value: RuleKey, onChange: (v: RuleKey) => void }) => {
+  const { t } = useTranslation()
+  return (
   <Select value={value} onValueChange={onChange}>
     <SelectTrigger className="!h-7 w-1/3">
-      <SelectValue placeholder="property" />
+      <SelectValue placeholder={t('misc2.property')} />
     </SelectTrigger>
     <SelectContent>
       {KEYS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
     </SelectContent>
   </Select>
-))
+  )
+})
 
 const OperatorDropDown = memo(({ value, onChange }: { value: RuleOperator, onChange: (v: RuleOperator) => void }) => (
   <Select value={value} onValueChange={onChange}>

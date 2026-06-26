@@ -14,6 +14,7 @@ import { sketchService } from '@/api/sketch-service'
 import { toast } from 'sonner'
 import { useGraphSettingsStore } from '@/stores/graph-settings-store'
 import Loader from '../loader'
+import { useTranslation } from 'react-i18next'
 
 interface ImportSheetProps {
   sketchId: string
@@ -22,6 +23,7 @@ interface ImportSheetProps {
 const ALLOWED_EXTENSIONS = ['.txt', '.json']
 
 export function ImportSheet({ sketchId }: ImportSheetProps) {
+  const { t } = useTranslation()
   const onOpenChange = useGraphSettingsStore((s) => s.setImportModalOpen)
   const open = useGraphSettingsStore((s) => s.importModalOpen)
   const [file, setFile] = useState<File | null>(null)
@@ -49,7 +51,9 @@ export function ImportSheet({ sketchId }: ImportSheetProps) {
         .substring(selectedFile.name.lastIndexOf('.'))
       if (!ALLOWED_EXTENSIONS.includes(fileExtension)) {
         toast.error(
-          `Only ${ALLOWED_EXTENSIONS.join(', ')} files are supported. Please upload file with correct format.`
+          t('importData.errorUnsupportedFormat', {
+            formats: ALLOWED_EXTENSIONS.join(', ')
+          })
         )
         return
       }
@@ -118,10 +122,8 @@ export function ImportSheet({ sketchId }: ImportSheetProps) {
       >
         {/* Header stays fixed */}
         <SheetHeader className="shrink-0 border-b bg-background p-0 h-19 px-6 justify-center flex-col flex items-start">
-          <SheetTitle>Import entities</SheetTitle>
-          <SheetDescription>
-            Upload a TXT file with one value per line to import entities into your sketch
-          </SheetDescription>
+          <SheetTitle>{t('importData.title')}</SheetTitle>
+          <SheetDescription>{t('importData.description')}</SheetDescription>
         </SheetHeader>
         <div className="flex flex-col grow overflow-hidden p-6">
           {!file && !analysisResult && (
@@ -139,8 +141,8 @@ export function ImportSheet({ sketchId }: ImportSheetProps) {
               <div className="flex flex-col items-center gap-4">
                 <Upload className="h-12 w-12 text-muted-foreground" />
                 <div>
-                  <p className="text-lg font-medium">Drag & drop your file here</p>
-                  <p className="text-sm text-muted-foreground mt-1">or click to browse</p>
+                  <p className="text-lg font-medium">{t('importData.dropFileHere')}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t('importData.orClickToBrowse')}</p>
                 </div>
                 <input
                   type="file"
@@ -151,13 +153,13 @@ export function ImportSheet({ sketchId }: ImportSheetProps) {
                 />
                 <Button asChild variant="outline">
                   <label htmlFor="file-upload" className="cursor-pointer">
-                    Browse files
+                    {t('importData.chooseFile')}
                   </label>
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  Supported format:{' '}
-                  <span className="font-bold">{ALLOWED_EXTENSIONS.join(', ')}</span> (one value per
-                  line)
+                  {t('importData.supportedFormat')}{' '}
+                  <span className="font-bold">{ALLOWED_EXTENSIONS.join(', ')}</span>{' '}
+                  {t('importData.oneValuePerLine')}
                 </p>
               </div>
             </div>
@@ -166,7 +168,7 @@ export function ImportSheet({ sketchId }: ImportSheetProps) {
           {isAnalyzing && (
             <div className="flex flex-col items-center justify-center gap-4 py-12">
               <Loader />
-              <p className="text-sm text-muted-foreground">Analyzing file...</p>
+              <p className="text-sm text-muted-foreground">{t('importData.analyzingFile')}</p>
             </div>
           )}
 
@@ -178,7 +180,7 @@ export function ImportSheet({ sketchId }: ImportSheetProps) {
                 <p className="text-sm text-muted-foreground">{(file.size / 1024).toFixed(2)} KB</p>
               </div>
               <Button variant="outline" size="sm" onClick={handleReset}>
-                Remove
+                {t('importData.remove')}
               </Button>
             </div>
           )}

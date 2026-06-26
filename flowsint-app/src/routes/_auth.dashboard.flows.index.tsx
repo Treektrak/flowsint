@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { PlusIcon, FileCode2, Clock, FileX } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
@@ -28,6 +29,7 @@ export const Route = createFileRoute('/_auth/dashboard/flows/')({
 })
 
 function FlowPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const {
     data: flows,
@@ -55,8 +57,8 @@ function FlowPage() {
 
   return (
     <PageLayout
-      title="Flows"
-      description="Create and manage your flow flows."
+      title={t('flows.flows')}
+      description={t('flows.pageDescription')}
       isLoading={isLoading}
       loadingComponent={
         <div className="p-2">
@@ -66,8 +68,8 @@ function FlowPage() {
       error={error}
       errorComponent={
         <ErrorState
-          title="Couldn't load flows"
-          description="Something went wrong while fetching data. Please try again."
+          title={t('flows.loadError')}
+          description={t('flows.loadErrorDescription')}
           error={error}
           onRetry={() => refetch()}
         />
@@ -76,7 +78,7 @@ function FlowPage() {
         <NewFlow>
           <Button size="sm" data-tour-id="create-flow">
             <PlusIcon className="w-4 h-4 mr-2" />
-            New flow
+            {t('flows.newFlow')}
           </Button>
         </NewFlow>
       }
@@ -87,15 +89,14 @@ function FlowPage() {
             <div className="rounded-full bg-muted/50 p-4 mb-4">
               <FileX className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">No flow yet</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('flows.emptyTitle')}</h3>
             <p className="text-muted-foreground mb-6 max-w-md">
-              Get started by creating your first flow. You can use flows to process and manipulate
-              your data in powerful ways.
+              {t('flows.emptyDescription')}
             </p>
             <NewFlow>
               <Button>
                 <PlusIcon className="w-4 h-4 mr-2" />
-                Create your first flow
+                {t('flows.createFirstFlow')}
               </Button>
             </NewFlow>
           </div>
@@ -108,7 +109,11 @@ function FlowPage() {
                   value={category}
                   className="data-[state=active]:bg-background"
                 >
-                  {category}
+                  {category === 'All'
+                    ? t('flows.categoryAll')
+                    : category === 'Uncategorized'
+                      ? t('flows.categoryUncategorized')
+                      : category}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -133,12 +138,12 @@ function FlowPage() {
                         <CardHeader className="pb-2">
                           <div className="flex items-start justify-between">
                             <CardTitle className="text-lg font-medium group-hover:text-primary transition-colors">
-                              {flow.name || '(Unnamed flow)'}
+                              {flow.name || t('flows.unnamedFlow')}
                             </CardTitle>
                             <FileCode2 className="w-4 h-4 text-muted-foreground" />
                           </div>
                           <CardDescription className="line-clamp-2 mt-1">
-                            {flow.description || 'No description provided'}
+                            {flow.description || t('flows.noDescription')}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>

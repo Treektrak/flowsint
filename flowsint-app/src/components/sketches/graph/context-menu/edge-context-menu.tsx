@@ -11,6 +11,7 @@ import { useConfirm } from '@/components/use-confirm-dialog'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { usePermissions } from '@/hooks/use-can'
+import { useTranslation } from 'react-i18next'
 
 interface EdgeContextMenuProps {
   edge?: GraphEdge
@@ -45,6 +46,7 @@ export default function EdgeContextMenu({
   ...props
 }: EdgeContextMenuProps) {
   const { id: sketchId } = useParams({ strict: false })
+  const { t } = useTranslation()
   const { canEdit } = usePermissions()
   const removeEdges = useGraphStore((s) => s.removeEdges)
   const updateEdge = useGraphStore((s) => s.updateEdge)
@@ -92,11 +94,11 @@ export default function EdgeContextMenu({
             data: { label: newLabel }
           })
         )
-        toast.success('Relationship updated successfully.')
+        toast.success(t('misc2.edgeUpdateSuccess'))
       } catch (error) {
         // Rollback on error
         updateEdge(edge.id, { label: previousLabel })
-        toast.error('Failed to update relationship.')
+        toast.error(t('misc2.edgeUpdateError'))
       }
     }
   }, [edge, updateEdge, sketchId, setMenu, onSubmitNew])
@@ -115,8 +117,8 @@ export default function EdgeContextMenu({
       const count = edgeIds.length
       if (
         !(await confirm({
-          title: `You are about to delete ${count} relationship${count > 1 ? 's' : ''}?`,
-          message: 'The action is irreversible.'
+          title: t('misc2.edgeDeleteConfirmTitle', { count }),
+          message: t('misc2.edgeDeleteConfirmMessage')
         }))
       ) {
         return
@@ -129,9 +131,9 @@ export default function EdgeContextMenu({
           return sketchService.deleteEdges(sketchId, JSON.stringify({ relationshipIds: edgeIds }))
         })(),
         {
-          loading: `Deleting ${count} relationship${count > 1 ? 's' : ''}...`,
-          success: `Relationship${count > 1 ? 's' : ''} deleted successfully.`,
-          error: 'Failed to delete relationship.'
+          loading: t('misc2.edgeDeleteLoading', { count }),
+          success: t('misc2.edgeDeleteSuccess', { count }),
+          error: t('misc2.edgeDeleteError')
         }
       )
     },
@@ -163,7 +165,7 @@ export default function EdgeContextMenu({
       <div className="px-3 py-1 flex items-center justify-between shrink-0">
         <div className="flex text-xs items-center gap-1 truncate">
           {isMultiSelect ? (
-            <span className="block truncate">{edgeIds.length} relationships selected</span>
+            <span className="block truncate">{t('misc2.edgesSelected', { count: edgeIds.length })}</span>
           ) : (
             <div className="p-1">
               <Input

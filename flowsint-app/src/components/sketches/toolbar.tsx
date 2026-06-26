@@ -17,9 +17,11 @@ import {
   Download,
   LassoSelect,
   ChevronDown,
-  SquareDashed
+  SquareDashed,
+  Sparkles
 } from 'lucide-react'
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import Filters from './filters/filters'
 import { SaveStatusIndicator } from './save-status-indicator'
@@ -32,9 +34,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { Fragment } from 'react'
 import { sketchService } from '@/api/sketch-service'
+import { downloadAgentReport, listModels, type ProviderModels } from '@/api/agent-service'
+import { AiTools } from './ai-tools'
 import { useParams } from '@tanstack/react-router'
 import { exportToPNG } from './graph/utils/export-to-png'
 import { PathFinder } from './graph/actions/path-finder'
@@ -105,6 +112,7 @@ const FloatingBar = ({
 )
 
 export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean }) {
+  const { t } = useTranslation()
   const { confirm } = useConfirm()
   const { canEdit } = usePermissions()
   const { id: sketchId } = useParams({ strict: false })
@@ -135,15 +143,14 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
     try {
       refetchGraph()
     } catch (error) {
-      toast.error('Failed to refresh graph data')
+      toast.error(t('graphToolbar.refreshFailed'))
     }
   }, [refetchGraph])
 
   const handleApplyForceLayout = useCallback(async () => {
     const confirmed = await confirm({
-      title: 'Apply force layout?',
-      message:
-        'This will reset all node positions and regenerate them using the force-directed layout algorithm. Current positions will be lost.'
+      title: t('graphToolbar.forceLayoutConfirmTitle'),
+      message: t('graphToolbar.forceLayoutConfirmMessage')
     })
 
     if (!confirmed) {
@@ -151,19 +158,20 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
     }
     try {
       regenerateLayout('force')
-      toast.success('Force layout applied successfully')
+      toast.success(t('graphToolbar.forceLayoutSuccess'))
     } catch (error) {
       toast.error(
-        `Failed to apply layout: ${error instanceof Error ? error.message : 'Unknown error'}`
+        t('graphToolbar.applyLayoutFailed', {
+          error: error instanceof Error ? error.message : t('graphToolbar.unknownError')
+        })
       )
     }
-  }, [confirm, regenerateLayout])
+  }, [confirm, regenerateLayout, t])
 
   const handleApplyHierarchyLayout = useCallback(async () => {
     const confirmed = await confirm({
-      title: 'Apply hierarchy layout?',
-      message:
-        'This will reset all node positions and regenerate them using the hierarchical layout algorithm. Current positions will be lost.'
+      title: t('graphToolbar.hierarchyLayoutConfirmTitle'),
+      message: t('graphToolbar.hierarchyLayoutConfirmMessage')
     })
 
     if (!confirmed) {
@@ -171,13 +179,15 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
     }
     try {
       regenerateLayout('hierarchy')
-      toast.success('Hierarchy layout applied successfully')
+      toast.success(t('graphToolbar.hierarchyLayoutSuccess'))
     } catch (error) {
       toast.error(
-        `Failed to apply layout: ${error instanceof Error ? error.message : 'Unknown error'}`
+        t('graphToolbar.applyLayoutFailed', {
+          error: error instanceof Error ? error.message : t('graphToolbar.unknownError')
+        })
       )
     }
-  }, [confirm, regenerateLayout])
+  }, [confirm, regenerateLayout, t])
 
   const handleOpenAddRelationDialog = useCallback(() => {
     setOpenAddRelationDialog(true)
@@ -210,14 +220,46 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
         } else {
           await sketchService.exportSketch(sketchId, format)
         }
-        toast.success(`Sketch exported as ${format.toUpperCase()}`)
+        toast.success(t('graphToolbar.exportSuccess', { format: format.toUpperCase() }))
       } catch (error) {
         toast.error(
-          `Failed to export sketch: ${error instanceof Error ? error.message : 'Unknown error'}`
+          t('graphToolbar.exportFailed', {
+            error: error instanceof Error ? error.message : t('graphToolbar.unknownError')
+          })
         )
       }
     },
-    [sketchId, exportToPNG]
+    [sketchId, exportToPNG, t]
+  )
+
+  const [isReporting, setIsReporting] = useState(false)
+  const [providers, setProviders] = useState<ProviderModels[]>([])
+  useEffect(() => {
+    listModels()
+      .then((m) => setProviders(m.filter((p) => p.has_key)))
+      .catch(() => setProviders([]))
+  }, [])
+
+  const handleReport = useCallback(
+    async (provider?: string, model?: string) => {
+      if (!sketchId || isReporting) return
+      setIsReporting(true)
+      const pending = toast.loading(t('graphToolbar.reportGenerating'))
+      try {
+        const filename = await downloadAgentReport(sketchId, '', { provider, model })
+        toast.success(t('graphToolbar.reportReady', { filename }), { id: pending })
+      } catch (error) {
+        toast.error(
+          t('graphToolbar.reportFailed', {
+            error: error instanceof Error ? error.message : t('graphToolbar.unknownError')
+          }),
+          { id: pending }
+        )
+      } finally {
+        setIsReporting(false)
+      }
+    },
+    [sketchId, isReporting, t]
   )
 
   const areExactlyTwoSelected = selectedNodes.length === 2
@@ -234,25 +276,25 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
         <FloatingBar className="bottom-3 left-3">
           <ToolbarButton
             icon={<ZoomIn className="h-4 w-4 opacity-70" />}
-            tooltip="Zoom In"
+            tooltip={t('graphToolbar.zoomIn')}
             onClick={zoomIn}
             disabled={(view !== 'graph' && view !== 'map') || isSelectorModeActive || !zoomIn}
           />
           <ToolbarButton
             icon={<Minus className="h-4 w-4 opacity-70" />}
-            tooltip="Zoom Out"
+            tooltip={t('graphToolbar.zoomOut')}
             onClick={zoomOut}
             disabled={(view !== 'graph' && view !== 'map') || isSelectorModeActive}
           />
           <ToolbarButton
             icon={<Maximize className="h-4 w-4 opacity-70" />}
-            tooltip="Fit to View"
+            tooltip={t('graphToolbar.fitToView')}
             onClick={zoomToFit}
             disabled={(view !== 'graph' && view !== 'map') || isSelectorModeActive}
           />
           <ToolbarButton
             icon={<Focus className="h-4 w-4 opacity-70" />}
-            tooltip="Zoom to Selection"
+            tooltip={t('graphToolbar.zoomToSelection')}
             onClick={zoomToSelection}
             disabled={view !== 'graph' || isSelectorModeActive || selectedNodes.length < 2}
           />
@@ -283,7 +325,7 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
                   )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Select (hold S)</TooltipContent>
+              <TooltipContent>{t('graphToolbar.selectHoldS')}</TooltipContent>
             </Tooltip>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -303,7 +345,7 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
                         <ChevronDown className="h-3 w-3 opacity-50" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Selection mode</TooltipContent>
+                    <TooltipContent>{t('graphToolbar.selectionMode')}</TooltipContent>
                   </Tooltip>
                 </div>
               </DropdownMenuTrigger>
@@ -313,14 +355,14 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
                   className={cn(selectionMode === 'lasso' && 'bg-accent')}
                 >
                   <LassoSelect className="h-4 w-4 mr-2" />
-                  Lasso
+                  {t('graphToolbar.lasso')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handleSelectMode('rectangle')}
                   className={cn(selectionMode === 'rectangle' && 'bg-accent')}
                 >
                   <SquareDashed className="h-4 w-4 mr-2" />
-                  Rectangle
+                  {t('graphToolbar.rectangle')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -328,14 +370,14 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
           <Separator className="w-full" />
           <ToolbarButton
             icon={<GitPullRequestArrow className="h-4 w-4 opacity-70" />}
-            tooltip="Connect"
+            tooltip={t('graphToolbar.connect')}
             onClick={handleOpenAddRelationDialog}
             disabled={!canEdit || !areExactlyTwoSelected}
             badge={areExactlyTwoSelected ? 2 : null}
           />
           <ToolbarButton
             icon={<Merge className="h-4 w-4 opacity-70" />}
-            tooltip="Merge"
+            tooltip={t('graphToolbar.merge')}
             onClick={handleOpenMergeDialog}
             disabled={!canEdit || !areMergeable}
             badge={areMergeable ? selectedNodes.length : null}
@@ -344,13 +386,13 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
           <Separator className="w-full" />
           <ToolbarButton
             icon={<NetworkIcon className="h-4 w-4 opacity-70" />}
-            tooltip="Force layout"
+            tooltip={t('graphToolbar.forceLayout')}
             onClick={handleApplyForceLayout}
             disabled={!canEdit || isLoading || view !== 'graph'}
           />
           <ToolbarButton
             icon={<GitFork strokeWidth={1.4} className="h-4 w-4 opacity-70 rotate-180" />}
-            tooltip="Hierarchy layout"
+            tooltip={t('graphToolbar.hierarchyLayout')}
             onClick={handleApplyHierarchyLayout}
             disabled={!canEdit || isLoading || view !== 'graph'}
           />
@@ -364,7 +406,7 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
           <ToolbarButton
             disabled={isLoading}
             icon={<FunnelPlus className={cn('h-4 w-4 opacity-70')} />}
-            tooltip="Filters"
+            tooltip={t('graphToolbar.filters')}
             toggled={hasFilters}
           />
         </Filters>
@@ -387,20 +429,47 @@ export const Toolbar = memo(function Toolbar({ isLoading }: { isLoading: boolean
                     <Download className="h-4 w-4 opacity-70" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Export</TooltipContent>
+                <TooltipContent>{t('graphToolbar.export')}</TooltipContent>
               </Tooltip>
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-[140px]">
-            <DropdownMenuItem onClick={() => handleExport('json')}>Export as JSON</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport('png')}>Export as PNG</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('json')}>
+              {t('graphToolbar.exportAsJson')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('png')}>
+              {t('graphToolbar.exportAsPng')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleReport()} disabled={isReporting}>
+              <Sparkles className="h-4 w-4 mr-2 opacity-70" />
+              {isReporting ? t('graphToolbar.reportGenerating') : t('graphToolbar.aiReport')}
+            </DropdownMenuItem>
+            {providers.length > 0 && <DropdownMenuSeparator />}
+            {providers.map((p) => (
+              <Fragment key={p.provider}>
+                <DropdownMenuLabel className="text-[11px] uppercase tracking-wide text-muted-foreground/70 py-1">
+                  {p.label}
+                </DropdownMenuLabel>
+                {p.models.map((m) => (
+                  <DropdownMenuItem
+                    key={m.id}
+                    disabled={isReporting}
+                    onClick={() => handleReport(p.provider, m.id)}
+                    className="pl-6 text-xs"
+                  >
+                    ↳ {m.label}
+                  </DropdownMenuItem>
+                ))}
+              </Fragment>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        <AiTools sketchId={sketchId} onDone={() => refetchGraph?.()} />
         <ToolbarButton
           onClick={handleRefresh}
           disabled={isLoading}
           icon={<RotateCw className={cn('h-4 w-4 opacity-70', isLoading && 'animate-spin')} />}
-          tooltip="Refresh"
+          tooltip={t('graphToolbar.refresh')}
         />
       </FloatingBar>
     </>

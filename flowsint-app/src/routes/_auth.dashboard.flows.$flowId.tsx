@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import Editor from '@/components/flows/editor'
 import Loader from '@/components/loader'
 import { flowService } from '@/api/flow-service'
+import i18n from '@/i18n'
 
 export const Route = createFileRoute('/_auth/dashboard/flows/$flowId')({
   loader: async ({ params: { flowId } }) => {
@@ -14,14 +15,14 @@ export const Route = createFileRoute('/_auth/dashboard/flows/$flowId')({
     <div className="h-full w-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Loader />
-        <p className="text-muted-foreground">Loading flow...</p>
+        <p className="text-muted-foreground">{i18n.t('flows.loadingFlow')}</p>
       </div>
     </div>
   ),
   errorComponent: ({ error }) => (
     <div className="h-full w-full flex items-center justify-center">
       <div className="text-center">
-        <h2 className="text-lg font-semibold text-destructive mb-2">Error loading flow</h2>
+        <h2 className="text-lg font-semibold text-destructive mb-2">{i18n.t('flows.errorLoadingFlow')}</h2>
         <p className="text-muted-foreground">{error.message}</p>
       </div>
     </div>

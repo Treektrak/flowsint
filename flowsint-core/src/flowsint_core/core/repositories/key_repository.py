@@ -1,5 +1,6 @@
 """Repository for Key model."""
 
+import os
 from typing import List, Optional
 from uuid import UUID
 
@@ -8,7 +9,10 @@ from sqlalchemy import exists
 from ..models import Key
 from .base import BaseRepository
 
-CHAT_KEY_NAMES = ["MISTRAL_API_KEY"]
+# Имя ключа для чат-ассистента определяется активным LLM-провайдером
+# (LLM_PROVIDER): mistral -> MISTRAL_API_KEY, anthropic -> ANTHROPIC_API_KEY и т.д.
+_ACTIVE_PROVIDER = os.environ.get("LLM_PROVIDER", "mistral").upper()
+CHAT_KEY_NAMES = [f"{_ACTIVE_PROVIDER}_API_KEY"]
 
 
 class KeyRepository(BaseRepository[Key]):

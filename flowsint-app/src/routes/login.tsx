@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import { useLogin } from '@/hooks/use-auth'
 import { FormProvider, useForm } from 'react-hook-form'
 import FormField from '@/components/shared/form-field'
@@ -19,6 +20,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 function Login() {
+  const { t } = useTranslation()
   // Initialize React Hook Form
   const methods = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -46,7 +48,7 @@ function Login() {
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold">Sign in to your account</h2>
+          <h2 className="mt-6 text-center text-3xl font-extrabold">{t('auth.signInTitle')}</h2>
         </div>
 
         <FormProvider {...methods}>
@@ -54,7 +56,7 @@ function Login() {
             {/* Display login error */}
             {login.error && (
               <div className="p-3 mb-4 text-sm bg-red-500/10 border border-red-400 text-red-700 rounded">
-                {login.error instanceof Error ? login.error.message : 'Login error'}
+                {login.error instanceof Error ? login.error.message : t('auth.loginError')}
               </div>
             )}
 
@@ -62,17 +64,17 @@ function Login() {
               {/* Username field */}
               <FormField
                 name="username"
-                label="Email"
-                placeholder="Your email"
+                label={t('auth.email')}
+                placeholder={t('auth.emailPlaceholder')}
                 disabled={login.isPending}
               />
 
               {/* Password field */}
               <FormField
                 name="password"
-                label="Password"
+                label={t('auth.password')}
                 type="password"
-                placeholder="Your password"
+                placeholder={t('auth.passwordPlaceholder')}
                 disabled={login.isPending}
               />
             </div>
@@ -127,10 +129,10 @@ function Login() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Signing in...
+                    {t('auth.signingIn')}
                   </span>
                 ) : (
-                  'Sign In'
+                  t('auth.signInButton')
                 )}
               </button>
             </div>
@@ -140,9 +142,9 @@ function Login() {
         {/* Link to registration */}
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            {t('auth.noAccount')}{' '}
             <Link to="/register" className="font-medium text-primary">
-              Create an account
+              {t('auth.createAccount')}
             </Link>
           </p>
         </div>

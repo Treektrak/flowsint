@@ -4,11 +4,13 @@ from typing import Optional
 from .protocol import LLMProvider
 
 
-_SUPPORTED_PROVIDERS = ("mistral", "openai")
+_SUPPORTED_PROVIDERS = ("mistral", "openai", "anthropic", "deepseek")
 
 _DEFAULT_API_KEY_ENV = {
     "mistral": "MISTRAL_API_KEY",
     "openai": "OPENAI_API_KEY",
+    "anthropic": "ANTHROPIC_API_KEY",
+    "deepseek": "DEEPSEEK_API_KEY",
 }
 
 
@@ -49,6 +51,16 @@ def create_llm_provider(
         from .providers.openai import OpenAIProvider
 
         return OpenAIProvider(**kwargs)
+
+    if provider == "anthropic":
+        from .providers.anthropic import AnthropicProvider
+
+        return AnthropicProvider(**kwargs)
+
+    if provider == "deepseek":
+        from .providers.deepseek import DeepSeekProvider
+
+        return DeepSeekProvider(**kwargs)
 
     # Unreachable due to the check above, but satisfies type checkers
     raise ValueError(f"Unknown provider: {provider}")

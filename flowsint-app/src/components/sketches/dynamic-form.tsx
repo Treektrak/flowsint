@@ -24,6 +24,7 @@ import type { FormField } from '@/lib/action-items'
 import { MetadataField } from '@/components/sketches/metadata-field'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next'
 
 interface DynamicFormProps {
   currentNodeType: any
@@ -40,6 +41,7 @@ export function DynamicForm({
   isForm = true,
   loading = false
 }: DynamicFormProps) {
+  const { t } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const dynamicSchema = useMemo(() => {
@@ -52,7 +54,7 @@ export function DynamicForm({
             schemaMap[field.name] = field.required
               ? z
                   .string()
-                  .min(1, { message: `${field.label} is required` })
+                  .min(1, { message: t('misc2.fieldRequired', { label: field.label }) })
                   .email({ message: 'Email invalide' })
               : z.string().email({ message: 'Email invalide' }).optional()
             break
@@ -60,7 +62,7 @@ export function DynamicForm({
             schemaMap[field.name] = field.required
               ? z
                   .string()
-                  .min(1, { message: `${field.label} is required` })
+                  .min(1, { message: t('misc2.fieldRequired', { label: field.label }) })
                   .url({ message: 'URL invalide' })
               : z.string().url({ message: 'URL invalide' }).optional()
             break
@@ -68,7 +70,7 @@ export function DynamicForm({
             schemaMap[field.name] = field.required
               ? z
                   .string()
-                  .min(1, { message: `${field.label} is required` })
+                  .min(1, { message: t('misc2.fieldRequired', { label: field.label }) })
                   .refine((val) => !isNaN(Number(val)), {
                     message: 'Doit être un nombre valide'
                   })
@@ -85,7 +87,7 @@ export function DynamicForm({
               schemaMap[field.name] = field.required
                 ? z
                     .string()
-                    .min(1, { message: `${field.label} is required` })
+                    .min(1, { message: t('misc2.fieldRequired', { label: field.label }) })
                     .refine((val) => validValues.includes(val), {
                       message: 'Valeur non valide'
                     })
@@ -97,13 +99,13 @@ export function DynamicForm({
                     .optional()
             } else {
               schemaMap[field.name] = field.required
-                ? z.string().min(1, { message: `${field.label} is required` })
+                ? z.string().min(1, { message: t('misc2.fieldRequired', { label: field.label }) })
                 : z.string().optional()
             }
             break
           case 'date':
             schemaMap[field.name] = field.required
-              ? z.string().min(1, { message: `${field.label} is required` })
+              ? z.string().min(1, { message: t('misc2.fieldRequired', { label: field.label }) })
               : z.string().optional()
             break
           case 'hidden':
@@ -111,7 +113,7 @@ export function DynamicForm({
             break
           case 'textarea':
             schemaMap[field.name] = field.required
-              ? z.string().min(1, { message: `${field.label} is required` })
+              ? z.string().min(1, { message: t('misc2.fieldRequired', { label: field.label }) })
               : z.string().optional()
             break
           case 'metadata':
@@ -123,19 +125,19 @@ export function DynamicForm({
             break
           case 'list':
             schemaMap[field.name] = field.required
-              ? z.array(z.string()).min(1, { message: `${field.label} is required` })
+              ? z.array(z.string()).min(1, { message: t('misc2.fieldRequired', { label: field.label }) })
               : z.array(z.string()).optional().default([])
             break
           default:
             schemaMap[field.name] = field.required
-              ? z.string().min(1, { message: `${field.label} is required` })
+              ? z.string().min(1, { message: t('misc2.fieldRequired', { label: field.label }) })
               : z.string().optional()
         }
       })
       return z.object(schemaMap)
     }
     return createDynamicSchema()
-  }, [currentNodeType])
+  }, [currentNodeType, t])
 
   type FormValues = z.infer<typeof dynamicSchema>
   const getDefaultValues = () => {
@@ -202,7 +204,7 @@ export function DynamicForm({
       }
     } catch (error) {
       console.log(error)
-      toast.error('An error occurred while submitting the form.')
+      toast.error(t('misc2.formSubmitError'))
     } finally {
       setIsSubmitting(false)
     }
@@ -242,7 +244,7 @@ export function DynamicForm({
             <Input
               id={field.name}
               type={field.type}
-              placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+              placeholder={field.placeholder || t('misc2.enterField', { label: field.label.toLowerCase() })}
               className={errors[field.name] ? 'border-destructive' : ''}
               {...register(field.name)}
             />
@@ -270,7 +272,7 @@ export function DynamicForm({
                 <TagsInput
                   value={Array.isArray(value) ? value : []}
                   onChange={(tags) => onChange(tags)}
-                  placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                  placeholder={field.placeholder || t('misc2.enterField', { label: field.label.toLowerCase() })}
                   orientation="vertical"
                   variant='full'
                 />
@@ -294,7 +296,7 @@ export function DynamicForm({
             </div>
             <Textarea
               id={field.name}
-              placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+              placeholder={field.placeholder || t('misc2.enterField', { label: field.label.toLowerCase() })}
               className={errors[field.name] ? 'border-destructive' : ''}
               {...register(field.name)}
             />
@@ -325,7 +327,7 @@ export function DynamicForm({
                     className={errors[field.name] ? 'border-destructive' : ''}
                   >
                     <SelectValue
-                      placeholder={field.placeholder || `Select ${field.label.toLowerCase()}`}
+                      placeholder={field.placeholder || t('misc2.selectField', { label: field.label.toLowerCase() })}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -424,7 +426,7 @@ export function DynamicForm({
             <Input
               id={field.name}
               type="url"
-              placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+              placeholder={field.placeholder || t('misc2.enterField', { label: field.label.toLowerCase() })}
               className={errors[field.name] ? 'border-destructive' : ''}
               {...register(field.name)}
             />
@@ -464,7 +466,7 @@ export function DynamicForm({
   }
 
   if (!currentNodeType) {
-    return <div className="p-4 text-center text-muted-foreground">Could not find this item.</div>
+    return <div className="p-4 text-center text-muted-foreground">{t('misc2.itemNotFound')}</div>
   }
   if (!isForm) {
     return <div className="space-y-4">{currentNodeType.fields.map(renderField)}</div>
@@ -477,10 +479,10 @@ export function DynamicForm({
           {isSubmitting || loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Submitting...
+              {t('misc2.submitting')}
             </>
           ) : (
-            `Add ${currentNodeType.label}`
+            t('misc2.addEntity', { label: currentNodeType.label })
           )}
         </Button>
       </div>

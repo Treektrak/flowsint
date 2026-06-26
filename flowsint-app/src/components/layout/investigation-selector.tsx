@@ -11,8 +11,10 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { Search, ChevronDown, Plus, FolderOpen } from 'lucide-react'
 import NewInvestigation from '@/components/investigations/new-investigation'
 import { queryKeys } from '@/api/query-keys'
+import { useTranslation } from 'react-i18next'
 
 export default function InvestigationSelector() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { investigationId } = useParams({ strict: false })
   const [open, setOpen] = useState(false)
@@ -58,7 +60,7 @@ export default function InvestigationSelector() {
                 className="min-w-none !h-7 rounded-sm w-full !bg-transparent hover:bg-foreground/10 font-medium shadow-none border-none text-ellipsis truncate gap-1 inset-shadow-none justify-between"
               >
                 <span className="text-ellipsis truncate">
-                  {currentInvestigation?.name || 'Select an investigation'}
+                  {currentInvestigation?.name || t('misc.selectAnInvestigation')}
                 </span>
                 <ChevronDown className="w-4 h-4 shrink-0" />
               </Button>
@@ -69,7 +71,7 @@ export default function InvestigationSelector() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search investigations..."
+                  placeholder={t('misc.searchInvestigations')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8 h-8 text-sm"
@@ -100,7 +102,7 @@ export default function InvestigationSelector() {
                   className="w-full justify-start gap-2 h-auto py-1.5 px-2 rounded-none hover:bg-accent text-muted-foreground hover:text-foreground text-sm"
                 >
                   <Plus className="w-4 h-4" />
-                  <span className="text-left truncate">Create new investigation</span>
+                  <span className="text-left truncate">{t('misc.createNewInvestigation')}</span>
                 </Button>
               </NewInvestigation>
             </div>

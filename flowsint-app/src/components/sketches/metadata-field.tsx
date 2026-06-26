@@ -3,6 +3,7 @@ import { PlusCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 interface MetadataFieldProps {
   value: Record<string, string>
@@ -12,18 +13,19 @@ interface MetadataFieldProps {
 }
 
 export function MetadataField({ value = {}, onChange, error, className }: MetadataFieldProps) {
+  const { t } = useTranslation()
   const [newKey, setNewKey] = useState('')
   const [newValue, setNewValue] = useState('')
   const [localError, setLocalError] = useState<string | null>(null)
 
   const handleAddPair = () => {
     if (!newKey.trim()) {
-      setLocalError('Key cannot be empty.')
+      setLocalError(t('misc2.keyCannotBeEmpty'))
       return
     }
 
     if (value[newKey]) {
-      setLocalError(`Key "${newKey}" already exists`)
+      setLocalError(t('misc2.keyAlreadyExists', { key: newKey }))
       return
     }
 
@@ -50,7 +52,7 @@ export function MetadataField({ value = {}, onChange, error, className }: Metada
     }
 
     if (newKey !== oldKey && value[newKey]) {
-      setLocalError(`Key "${newKey}" already exists`)
+      setLocalError(t('misc2.keyAlreadyExists', { key: newKey }))
       return
     }
 
@@ -78,14 +80,14 @@ export function MetadataField({ value = {}, onChange, error, className }: Metada
               <Input
                 value={key}
                 onChange={(e) => handleKeyChange(key, e.target.value, val)}
-                placeholder="Clé"
+                placeholder={t('misc2.metadataKey')}
                 className="flex-1"
               />
               <span className="text-muted-foreground">:</span>
               <Input
                 value={val}
                 onChange={(e) => handleValueChange(key, e.target.value)}
-                placeholder="Valeur"
+                placeholder={t('misc2.metadataValue')}
                 className="flex-1"
               />
               <Button
@@ -96,7 +98,7 @@ export function MetadataField({ value = {}, onChange, error, className }: Metada
                 className="h-8 w-8 text-destructive"
               >
                 <X className="h-4 w-4" />
-                <span className="sr-only">Supprimer</span>
+                <span className="sr-only">{t('misc2.remove')}</span>
               </Button>
             </div>
           ))}
@@ -109,7 +111,7 @@ export function MetadataField({ value = {}, onChange, error, className }: Metada
           <Input
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
-            placeholder="Key"
+            placeholder={t('misc2.metadataKey')}
             className={localError ? 'border-destructive' : ''}
           />
         </div>
@@ -118,7 +120,7 @@ export function MetadataField({ value = {}, onChange, error, className }: Metada
           <Input
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
-            placeholder="Value"
+            placeholder={t('misc2.metadataValue')}
           />
         </div>
         <Button
@@ -129,7 +131,7 @@ export function MetadataField({ value = {}, onChange, error, className }: Metada
           className="mb-0.5"
         >
           <PlusCircle className="h-4 w-4 mr-1" />
-          Add
+          {t('misc2.add')}
         </Button>
       </div>
 

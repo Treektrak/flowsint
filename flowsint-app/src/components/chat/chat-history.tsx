@@ -8,6 +8,7 @@ import { useCallback } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { useConfirm } from '../use-confirm-dialog'
 import { useChatState } from '@/stores/use-chat-store'
+import { useTranslation } from 'react-i18next'
 
 const ChatHistory = ({
   setView,
@@ -18,6 +19,7 @@ const ChatHistory = ({
   deleteChatMutation: any
   handleCreateNewChat: any
 }) => {
+  const { t } = useTranslation()
   const { confirm } = useConfirm()
   const setCurrentChatId = useChatState((s) => s.setCurrentChatId)
   const { data: chats, isLoading } = useQuery({
@@ -44,7 +46,7 @@ const ChatHistory = ({
             >
               <ArrowLeft className="h-3 w-3" />
             </Button>
-            <span className="opacity-60">Chat history</span>
+            <span className="opacity-60">{t('chat.chatHistory')}</span>
           </div>
         </div>
       </div>
@@ -73,11 +75,10 @@ const ChatHistory = ({
             </div>
           </div>
           <div className="space-y-2 max-w-sm">
-            <h3 className="text-lg font-semibold text-foreground">No conversations yet</h3>
-            <p className="text-sm opacity-70">
-              Start chatting with AI to analyze your investigation data and get insights. Your
-              conversation history will appear here.
-            </p>
+            <h3 className="text-lg font-semibold text-foreground">
+              {t('chat.noConversationsYet')}
+            </h3>
+            <p className="text-sm opacity-70">{t('chat.noConversationsDescription')}</p>
           </div>
           <div className="mt-6">
             <Button
@@ -86,7 +87,7 @@ const ChatHistory = ({
               onClick={handleCreateNewChat}
               className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 hover:from-primary/20 hover:to-primary/10"
             >
-              Start your first chat
+              {t('chat.startFirstChat')}
             </Button>
           </div>
         </div>
@@ -108,12 +109,13 @@ const ChatItem = ({
   deleteChatMutation: any
   switchToChat: any
 }) => {
+  const { t } = useTranslation()
   const handleDeleteChat = useCallback(async (e: { stopPropagation: () => void }) => {
     e.stopPropagation()
     if (
       await confirm({
-        title: 'Are you sure you want to delete this chat?',
-        message: 'This action is irreversible.'
+        title: t('chat.deleteChatConfirmTitle'),
+        message: t('chat.deleteChatConfirmMessage')
       })
     ) {
       await deleteChatMutation.mutateAsync(chat.id)

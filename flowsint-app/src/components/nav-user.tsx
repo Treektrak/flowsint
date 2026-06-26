@@ -15,8 +15,10 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { UserAvatar } from './ui/avatar'
 import { useAuthStore } from '@/stores/auth-store'
 import { getDisplayName } from '@/lib/user-display'
+import { useTranslation } from 'react-i18next'
 
 export function NavUser() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const displayName = getDisplayName(user)
@@ -49,21 +51,21 @@ export function NavUser() {
             </div>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuLabel className="text-xs font-light opacity-60">Preferences</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs font-light opacity-60">{t('nav.preferences')}</DropdownMenuLabel>
         <div className="flex text-sm items-center justify-between px-3">
-          Theme
+          {t('nav.theme')}
           <ModeToggle />
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/dashboard/profile">
             <UserIcon />
-            Profile
+            {t('nav.profile')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={logout}>
           <LogOut />
-          Log out
+          {t('nav.logOut')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

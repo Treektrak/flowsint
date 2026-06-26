@@ -13,8 +13,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { useTranslation } from 'react-i18next'
 
 const EdgeDetailsPanel = memo(() => {
+  const { t } = useTranslation()
   const { canEdit } = usePermissions()
   const { id: sketchId } = useParams({ strict: false })
   const nodes = useGraphStore((s) => s.nodes)
@@ -63,14 +65,14 @@ const EdgeDetailsPanel = memo(() => {
             data: { label: newLabel }
           })
         )
-        toast.success('Relationship updated successfully.')
+        toast.success(t('entities.relationshipUpdatedSuccess'))
       } catch (error) {
         // Rollback on error
         updateEdge(edge.id, { label: previousLabel })
-        toast.error('Failed to update relationship.')
+        toast.error(t('entities.relationshipUpdateError'))
       }
     }
-  }, [edge, updateEdge, sketchId])
+  }, [edge, updateEdge, sketchId, t])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -84,8 +86,8 @@ const EdgeDetailsPanel = memo(() => {
 
     if (
       !(await confirm({
-        title: 'You are about to delete this relationship?',
-        message: 'The action is irreversible.'
+        title: t('entities.deleteRelationshipConfirmTitle'),
+        message: t('entities.actionIrreversible')
       }))
     ) {
       return
@@ -104,12 +106,12 @@ const EdgeDetailsPanel = memo(() => {
         )
       })(),
       {
-        loading: 'Deleting relationship...',
-        success: 'Relationship deleted successfully.',
-        error: 'Failed to delete relationship.'
+        loading: t('entities.deletingRelationship'),
+        success: t('entities.relationshipDeletedSuccess'),
+        error: t('entities.relationshipDeleteError')
       }
     )
-  }, [edge, sketchId, confirm, removeEdges, setCurrentEdgeId])
+  }, [edge, sketchId, confirm, removeEdges, setCurrentEdgeId, t])
 
   const handleJumpToSource = useCallback(() => {
     if (sourceNode) {
@@ -129,9 +131,9 @@ const EdgeDetailsPanel = memo(() => {
         <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
           <MousePointer className="h-4 w-4 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">No relationship selected</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-2">{t('entities.noRelationshipSelected')}</h3>
         <p className="text-sm text-muted-foreground max-w-xs">
-          Click on any relationship in the graph to view its details
+          {t('entities.clickRelationshipHint')}
         </p>
       </div>
     )
@@ -145,7 +147,7 @@ const EdgeDetailsPanel = memo(() => {
         <Input
           ref={labelRef}
           className="h-7 text-sm font-semibold border-0 px-1 focus-visible:ring-1"
-          defaultValue={edge.label || 'Relationship'}
+          defaultValue={edge.label || t('entities.relationship')}
           onChange={handleInputChange}
           onFocus={(e) => e.stopPropagation()}
           onBlur={canEdit ? handleBlur : undefined}
@@ -168,7 +170,7 @@ const EdgeDetailsPanel = memo(() => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Delete relationship</p>
+                  <p>{t('entities.deleteRelationship')}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -190,9 +192,9 @@ const EdgeDetailsPanel = memo(() => {
                 <SourceIcon className="h-3 w-3" />
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-[10px] text-muted-foreground mb-0.5">Source</p>
+                <p className="text-[10px] text-muted-foreground mb-0.5">{t('entities.source')}</p>
                 <p className="text-xs font-medium truncate group-hover:text-primary transition-colors">
-                  {sourceNode?.nodeLabel || 'Unknown'}
+                  {sourceNode?.nodeLabel || t('entities.unknown')}
                 </p>
               </div>
             </button>
@@ -208,9 +210,9 @@ const EdgeDetailsPanel = memo(() => {
                 <TargetIcon className="h-3 w-3" />
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-[10px] text-muted-foreground mb-0.5">Target</p>
+                <p className="text-[10px] text-muted-foreground mb-0.5">{t('entities.target')}</p>
                 <p className="text-xs font-medium truncate group-hover:text-primary transition-colors">
-                  {targetNode?.nodeLabel || 'Unknown'}
+                  {targetNode?.nodeLabel || t('entities.unknown')}
                 </p>
               </div>
             </button>
@@ -222,7 +224,7 @@ const EdgeDetailsPanel = memo(() => {
           {/* Label */}
           <div className="flex w-full bg-card items-center divide-x divide-border border-b border-border p-0">
             <div className="w-1/2 px-3 py-1.5 text-xs text-muted-foreground font-normal truncate">
-              Label
+              {t('entities.label')}
             </div>
             <div className="w-1/2 px-3 py-1.5 text-xs font-medium flex items-center justify-between min-w-0 gap-1">
               <div className="truncate font-semibold">
@@ -236,7 +238,7 @@ const EdgeDetailsPanel = memo(() => {
           {edge.type && (
             <div className="flex w-full bg-card items-center divide-x divide-border border-b border-border p-0">
               <div className="w-1/2 px-3 py-1.5 text-xs text-muted-foreground font-normal truncate">
-                Type
+                {t('entities.type')}
               </div>
               <div className="w-1/2 px-3 py-1.5 text-xs font-medium flex items-center justify-between min-w-0">
                 <Badge variant="secondary" className="truncate text-[10px] px-1.5 py-0">
@@ -250,7 +252,7 @@ const EdgeDetailsPanel = memo(() => {
           {edge.caption && (
             <div className="flex w-full bg-card items-center divide-x divide-border border-b border-border p-0">
               <div className="w-1/2 px-3 py-1.5 text-xs text-muted-foreground font-normal truncate">
-                Caption
+                {t('entities.caption')}
               </div>
               <div className="w-1/2 px-3 py-1.5 text-xs font-medium flex items-center justify-between min-w-0 gap-1">
                 <div className="truncate font-semibold">{edge.caption}</div>
@@ -263,7 +265,7 @@ const EdgeDetailsPanel = memo(() => {
           {edge.date && (
             <div className="flex w-full bg-card items-center divide-x divide-border border-b border-border p-0">
               <div className="w-1/2 px-3 py-1.5 text-xs text-muted-foreground font-normal truncate">
-                Date
+                {t('entities.date')}
               </div>
               <div className="w-1/2 px-3 py-1.5 text-xs font-medium flex items-center justify-between min-w-0 gap-1">
                 <div className="truncate font-semibold">{edge.date}</div>
@@ -276,7 +278,7 @@ const EdgeDetailsPanel = memo(() => {
           {edge.confidence_level !== undefined && edge.confidence_level !== null && (
             <div className="flex w-full bg-card items-center divide-x divide-border border-b border-border p-0">
               <div className="w-1/2 px-3 py-1.5 text-xs text-muted-foreground font-normal truncate">
-                Confidence
+                {t('entities.confidence')}
               </div>
               <div className="w-1/2 px-3 py-1.5 text-xs font-medium flex items-center justify-between min-w-0 gap-1">
                 <div className="flex items-center gap-1.5 min-w-0">

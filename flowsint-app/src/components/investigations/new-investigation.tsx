@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from '@tanstack/react-router'
@@ -34,16 +35,17 @@ import { Input } from '@/components/ui/input'
 import * as z from 'zod'
 
 // Schema de validation Zod
-const investigationSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Investigation name is required')
-    .min(3, 'Investigation name must be at least 3 characters')
-    .max(100, 'Investigation name must be less than 100 characters'),
-  description: z.string().max(500, 'Description must be less than 500 characters').optional()
-})
+const createInvestigationSchema = (t: (key: string) => string) =>
+  z.object({
+    name: z
+      .string()
+      .min(1, t('dialogs.validationNameRequired'))
+      .min(3, t('dialogs.validationNameMin'))
+      .max(100, t('dialogs.validationNameMax')),
+    description: z.string().max(500, t('dialogs.validationDescriptionMax')).optional()
+  })
 
-type InvestigationFormData = z.infer<typeof investigationSchema>
+type InvestigationFormData = z.infer<ReturnType<typeof createInvestigationSchema>>
 
 interface NewInvestigationProps {
   children: ReactNode
@@ -51,12 +53,13 @@ interface NewInvestigationProps {
 }
 
 export default function NewInvestigation({ children, noDropDown = false }: NewInvestigationProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const router = useRouter()
   const queryClient = useQueryClient()
 
   const form = useForm<InvestigationFormData>({
-    resolver: zodResolver(investigationSchema),
+    resolver: zodResolver(createInvestigationSchema(t)),
     defaultValues: {
       name: '',
       description: ''
@@ -74,14 +77,14 @@ export default function NewInvestigation({ children, noDropDown = false }: NewIn
     mutationFn: investigationService.create,
     onSuccess: (result) => {
       if (result.id) {
-        toast.success('New investigation created.')
+        toast.success(t('dialogs.investigationCreated'))
         router.navigate({ to: `/dashboard/investigations/${result.id}` })
         // Invalidate investigations list
         queryClient.invalidateQueries({
           queryKey: queryKeys.investigations.list
         })
       } else {
-        toast.error(result.error || 'Failed to create investigation')
+        toast.error(result.error || t('dialogs.investigationCreateFailed'))
       }
     },
     onError: (error) => {
@@ -111,11 +114,11 @@ export default function NewInvestigation({ children, noDropDown = false }: NewIn
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Investigation name</FormLabel>
+                <FormLabel>{t('dialogs.investigationName')}</FormLabel>
                 <FormControl>
                   <Input
                     required
-                    placeholder="Fraud suspicion"
+                    placeholder={t('dialogs.investigationNamePlaceholder')}
                     disabled={isSubmitting}
                     {...field}
                   />
@@ -130,10 +133,10 @@ export default function NewInvestigation({ children, noDropDown = false }: NewIn
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>{t('dialogs.description')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Investigation into a phishing campaign via LinkedIn."
+                    placeholder={t('dialogs.investigationDescriptionPlaceholder')}
                     disabled={isSubmitting}
                     {...field}
                   />
@@ -146,10 +149,10 @@ export default function NewInvestigation({ children, noDropDown = false }: NewIn
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Investigation'}
+            {isSubmitting ? t('dialogs.creating') : t('dialogs.createInvestigation')}
           </Button>
         </DialogFooter>
       </form>
@@ -164,8 +167,8 @@ export default function NewInvestigation({ children, noDropDown = false }: NewIn
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>New investigation</DialogTitle>
-            <DialogDescription>Create a new blank investigation.</DialogDescription>
+            <DialogTitle>{t('dialogs.newInvestigation')}</DialogTitle>
+            <DialogDescription>{t('dialogs.newInvestigationDescription')}</DialogDescription>
           </DialogHeader>
           <InvestigationForm />
         </DialogContent>
@@ -179,7 +182,7 @@ export default function NewInvestigation({ children, noDropDown = false }: NewIn
         <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => setOpen(true)}>
-            New investigation
+            {t('dialogs.newInvestigation')}
             <span className="ml-auto text-xs text-muted-foreground">⌘ E</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -187,8 +190,8 @@ export default function NewInvestigation({ children, noDropDown = false }: NewIn
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>New investigation</DialogTitle>
-            <DialogDescription>Create a new blank investigation.</DialogDescription>
+            <DialogTitle>{t('dialogs.newInvestigation')}</DialogTitle>
+            <DialogDescription>{t('dialogs.newInvestigationDescription')}</DialogDescription>
           </DialogHeader>
           <InvestigationForm />
         </DialogContent>
