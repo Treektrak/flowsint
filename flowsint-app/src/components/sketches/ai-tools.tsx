@@ -29,13 +29,26 @@ export function AiTools({ sketchId, onDone }: AiToolsProps) {
   const [text, setText] = useState('')
   const [target, setTarget] = useState('')
   const [busy, setBusy] = useState(false)
+  const [kind, setKind] = useState<'text' | 'logs'>('text')
+
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    const reader = new FileReader()
+    reader.onload = () => setText(String(reader.result || ''))
+    reader.readAsText(f)
+    // эвристика: журналы логов
+    if (/\.(log|evtx|csv|xml|syslog)$/i.test(f.name) || /security|system|application|auth/i.test(f.name)) {
+      setKind('logs')
+    }
+  }
 
   const runImport = async () => {
     if (!sketchId || !text.trim()) return
     setBusy(true)
     const p = toast.loading(t('aiTools.importRunning'))
     try {
-      const r = await aiImport(sketchId, text)
+      const r = await aiImport(sketchId, text, kind)
       toast.success(t('aiTools.importDone', { nodes: r.nodes_added, edges: r.edges_added }), { id: p })
       setImportOpen(false)
       setText('')
@@ -83,11 +96,38 @@ export function AiTools({ sketchId, onDone }: AiToolsProps) {
             <DialogTitle>{t('aiTools.importTitle')}</DialogTitle>
             <DialogDescription>{t('aiTools.importDesc')}</DialogDescription>
           </DialogHeader>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="inline-flex rounded-md border border-border overflow-hidden text-xs">
+              <button
+                type="button"
+                onClick={() => setKind('text')}
+                className={kind === 'text' ? 'px-3 py-1 bg-primary text-primary-foreground' : 'px-3 py-1'}
+              >
+                {t('aiTools.modeText')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setKind('logs')}
+                className={kind === 'logs' ? 'px-3 py-1 bg-primary text-primary-foreground' : 'px-3 py-1'}
+              >
+                {t('aiTools.modeLogs')}
+              </button>
+            </div>
+            <label className="text-xs text-primary cursor-pointer hover:underline">
+              {t('aiTools.uploadFile')}
+              <input
+                type="file"
+                accept=".txt,.log,.csv,.xml,.json,.evtx,.syslog"
+                className="hidden"
+                onChange={onFile}
+              />
+            </label>
+          </div>
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={t('aiTools.importPlaceholder')}
-            className="min-h-[180px]"
+            placeholder={kind === 'logs' ? t('aiTools.logsPlaceholder') : t('aiTools.importPlaceholder')}
+            className="min-h-[180px] font-mono text-xs"
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setImportOpen(false)} disabled={busy}>

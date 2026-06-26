@@ -429,7 +429,7 @@
   "aiTools": {
     "import": "AI import from text",
     "importTitle": "AI entity import",
-    "importDesc": "Paste text (statement, chat, log, document) — AI extracts entities and links into the graph.",
+    "importDesc": "Paste text or upload a file (document, statement, chat, event log) — AI extracts entities and links into the graph.",
     "importPlaceholder": "Paste text to analyze…",
     "importRun": "Extract to graph",
     "importRunning": "Extracting…",
@@ -441,7 +441,11 @@
     "scanRun": "Run scan",
     "scanRunning": "Scanning…",
     "scanDone": "Added {{nodes}} nodes ({{events}} events)",
-    "failed": "Operation failed"
+    "failed": "Operation failed",
+    "modeText": "Text",
+    "modeLogs": "Event logs",
+    "uploadFile": "📎 Upload file",
+    "logsPlaceholder": "Paste an event log (Windows Security/System/Application, syslog, auth.log)… AI extracts accounts, hosts, IPs and logon events."
   },
   "misc": {
     "searchTraceon": "Search Traceon",

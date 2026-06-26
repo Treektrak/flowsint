@@ -211,6 +211,7 @@ async def report_sketch(
 
 class AiImportRequest(BaseModel):
     text: str
+    kind: Optional[str] = "text"  # "text" | "logs"
     provider: Optional[str] = None
     model: Optional[str] = None
 
@@ -230,7 +231,7 @@ async def ai_import(
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=f"LLM не настроен: {exc}")
 
-    result = await extract_graph(provider, body.text)
+    result = await extract_graph(provider, body.text, kind=body.kind or "text")
     nodes = result.get("nodes", [])
     edges = result.get("edges", [])
     if not nodes:

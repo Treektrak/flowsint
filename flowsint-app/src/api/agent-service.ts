@@ -35,11 +35,15 @@ export interface ImportResult {
   events?: number
 }
 
-/** ИИ-импорт: извлечь сущности и связи из текста в граф. */
-export function aiImport(sketchId: string, text: string): Promise<ImportResult> {
+/** ИИ-импорт: извлечь сущности и связи из текста/логов в граф. */
+export function aiImport(
+  sketchId: string,
+  text: string,
+  kind: 'text' | 'logs' = 'text'
+): Promise<ImportResult> {
   return fetchWithAuth(`/api/agents/sketch/${sketchId}/ai-import`, {
     method: 'POST',
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ text, kind })
   })
 }
 

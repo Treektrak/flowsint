@@ -53,6 +53,34 @@ _SYSTEM = (
 )
 
 
+_LOG_SYSTEM = (
+    "Ты — DFIR-аналитик, извлекающий граф событий из журналов логов "
+    "(Windows Event Log — Security/System/Application, syslog, auth.log и т.п.) "
+    "для расследования. Из присланного фрагмента журнала выдели сущности и связи.\n\n"
+    "Доступные типы сущностей (строго эти ключи):\n"
+    + ", ".join(_TYPES) + "\n\n"
+    "Маппинг:\n"
+    "- учётные записи/пользователи → individual или username; привилегированные/служебные → credential\n"
+    "- компьютеры/хосты/рабочие станции (Computer, Workstation, имя машины) → device\n"
+    "- IP-адреса (Source/Destination Address) → ip\n"
+    "- домены/FQDN → domain; процессы/исполняемые файлы → file; сетевые порты → port\n"
+    "- значимые события (вход/отказ/создание учётки/эскалация) фиксируй как message с описанием\n\n"
+    "Распознавай ключевые Event ID Windows и отражай их в связях/описаниях:\n"
+    "4624 (успешный вход), 4625 (ОТКАЗ входа), 4634/4647 (выход), 4648 (вход с явными "
+    "учётными данными), 4672 (назначены привилегии), 4720 (создана учётка), 4726 (удалена), "
+    "4732/4728 (добавление в привилегированную группу), 4768/4769 (Kerberos TGT/TGS), "
+    "1102 (очистка журнала).\n\n"
+    "Строй связи на русском в ВЕРХНЕМ_РЕГИСТРЕ, например: учётка --ВХОД_4624--> хост, "
+    "IP --ИСТОЧНИК_ВХОДА--> хост, учётка --ОТКАЗ_4625--> хост, учётка --ЭСКАЛАЦИЯ_4672--> хост, "
+    "учётка --СОЗДАЛ_4720--> учётка. Особо отмечай аномалии (серии отказов, входы в нерабочее "
+    "время, привилегированные операции, очистку журнала) — в properties соответствующего узла "
+    "поставь \"аномалия\": \"да\" и краткое описание.\n\n"
+    "Не выдумывай данные, которых нет в логе. Верни СТРОГО валидный JSON без markdown, формат:\n"
+    '{"nodes":[{"key":"n1","type":"device","label":"DC01","properties":{"device_id":"DC01"}}],'
+    '"edges":[{"source":"n2","target":"n1","label":"ВХОД_4624"}]}'
+)
+
+
 def _parse_json(raw: str) -> Dict[str, Any]:
     raw = raw.strip()
     m = re.search(r"```(?:json)?\s*(\{.*\})\s*```", raw, re.DOTALL)
@@ -65,14 +93,17 @@ def _parse_json(raw: str) -> Dict[str, Any]:
     return json.loads(raw)
 
 
-async def extract_graph(provider: LLMProvider, text: str) -> Dict[str, Any]:
-    """Извлекает {nodes, edges} из текста через LLM."""
+async def extract_graph(provider: LLMProvider, text: str, kind: str = "text") -> Dict[str, Any]:
+    """Извлекает {nodes, edges} из текста через LLM.
+    kind="logs" — специализированный режим разбора журналов событий."""
     text = (text or "").strip()
     if not text:
         return {"nodes": [], "edges": []}
+    system = _LOG_SYSTEM if kind == "logs" else _SYSTEM
+    header = "ФРАГМЕНТ ЖУРНАЛА ЛОГОВ:" if kind == "logs" else "ТЕКСТ ДЛЯ АНАЛИЗА:"
     messages = [
-        ChatMessage(role=MessageRole.SYSTEM, content=_SYSTEM),
-        ChatMessage(role=MessageRole.USER, content=f"ТЕКСТ ДЛЯ АНАЛИЗА:\n\n{text[:16000]}"),
+        ChatMessage(role=MessageRole.SYSTEM, content=system),
+        ChatMessage(role=MessageRole.USER, content=f"{header}\n\n{text[:24000]}"),
     ]
     raw = await provider.complete(messages)
     try:
